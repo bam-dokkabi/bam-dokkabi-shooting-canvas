@@ -1,3 +1,17 @@
+/*** font ***/
+/* DoHyeon */
+@font-face {
+    font-family: 'DoHyeon';
+    font-style: normal;
+    font-weight: 300;
+    src: local('DoHyeon'),
+        url('../fonts/DoHyeon.woff2') format('woff2'), 
+        url('../fonts/DoHyeon.woff') format('woff'),
+        url('../fonts/DoHyeon.ttf') format('truetype'),
+        url('../fonts/DoHyeon.otf') format('opentype'),
+        url('../fonts/DoHyeon.eot') format('embedded-opentype');
+}
+
 html {
 	background: url('../images/bg.png') no-repeat left top;
 }
