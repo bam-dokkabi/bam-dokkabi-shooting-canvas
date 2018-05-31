@@ -1,0 +1,36 @@
+html {
+	background: url('../images/bg.png') no-repeat left top;
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	overflow: hidden;
+}
+
+#container, .wrapper {
+	width: 100%;
+	text-align: center;
+}
+
+.wrapper {
+	position: relative;
+}
+
+.gameFrame {
+	position: absolute;
+	width: 1115px;
+	height: 895px;
+	background: url('../images/game.png') no-repeat left top;
+	background-size: cover;
+	z-index: 1;
+}
+
+#gameCanvas {
+	position: absolute;
+	margin-top: 100px;
+	z-index: 2;
+}
