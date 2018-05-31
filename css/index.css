@@ -21,7 +21,7 @@ body {
 }
 
 .gameFrame {
-	position: absolute;
+	margin: 0 auto;
 	width: 1115px;
 	height: 895px;
 	background: url('../images/game.png') no-repeat left top;
@@ -30,7 +30,6 @@ body {
 }
 
 #gameCanvas {
-	position: absolute;
-	margin-top: 100px;
+	margin-top: 153px;
 	z-index: 2;
 }
