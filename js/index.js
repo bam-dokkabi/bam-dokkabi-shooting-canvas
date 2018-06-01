@@ -7,6 +7,7 @@ $(document).ready(function() {
 	var context = canvas.getContext("2d");
 
 	var screenWidth = 914, screenHeight = 490;
+	var screenTopBorder = 20;
 	var scene = 1;
 	var screenOpacity = 1;
 	var startBtnColor = "#df6f5f";
@@ -47,6 +48,9 @@ $(document).ready(function() {
 	var monsterMovingSpeed = [1,2,3,4,5];
 
 	var charNames = ['타코', '큐크', '투이', '피치'];
+	var stageNames = [
+		'[문화비축기지 1]'
+	];
 
 	var charMovingSpeed = 5;
 	var missileMovingSpeed = 5;
@@ -58,6 +62,14 @@ $(document).ready(function() {
 
 	var canFire = true;
 	var sceneCount = 0;
+	var life = 3;
+	var skillBar = 0;
+	var skillBarSize = {width:240, height:12};
+	var timeMin = 3;
+	var timeSec = 0;
+	var curStage = 0;
+	var monsterKills = 0;
+	var monsterKillMax = 30;
 
 	var chooseChar1 = new Image();
 	var chooseChar2 = new Image();
@@ -75,6 +87,9 @@ $(document).ready(function() {
 	var monsterImg3 = new Image();
 	var monsterImg4 = new Image();
 	var monsterImg5 = new Image();
+	var skillBarFrameImg = new Image();
+	var skillBarImg = new Image();
+	var skillMaxImg = new Image();
 
 	chooseChar1.src = "images/c01.png";
 	chooseChar2.src = "images/c02.png";
@@ -111,6 +126,11 @@ $(document).ready(function() {
 		newImage.src = "images/explosion/explosion" + num + ".png";
 		explosionImgs.push(newImage);
 	}
+
+	skillBarFrameImg.src = "images/skill_bar.png";
+	skillBarImg.src = "images/skill_bar2.png";
+	skillMaxImg.src = "images/max.png";
+
 
 	var chooseCharPosX = [250, 350, 450, 550];
 	var chooseCharPosY = 180;
@@ -200,18 +220,59 @@ $(document).ready(function() {
 				context.drawImage(explosionImgs[explosionList[i].imgIdx], explosionList[i].x, explosionList[i].y, explosionList[i].width, explosionList[i].height);
 		}
 
+		context.font = "20px SandollGothicM";
+		context.fillStyle = "white";
+		context.textAlign = "left";
+		context.textBaseline = "top";
+		context.fillText("LIFE", 12, 10);
+
+		var heartString = "";
+		for(var i=0;i<life;i++) {
+			heartString += "❤️";
+		}
+		context.font ="18px SandollGothicM";
+		context.fillText(heartString, 60, 10);
+		context.font = "20px SandollGothicM";
+		context.fillText("SKILL", 165, 10);
+		context.fillText("TIME", 565, 10);
+		context.fillText(getTimeText(), 624, 10);
+		context.fillText("STAGE", 696, 10);
+		context.fillText(stageNames[curStage],762, 10);
+		context.fillText(getKillText(), 762, 30);
+
+		context.drawImage(skillBarFrameImg, 225, 12);
+		if(skillBar > 0)
+			context.drawImage(skillBarImg, 228, 14, skillBar*240/100,12);
+
+		if(skillBar == 100)
+			context.drawImage(skillMaxImg, 480, 13);
+
 		moveBackground();
 		movePlayer();
 		moveMissile();
 		moveMonster();
 		if(sceneCount%50 == 0) createMonster();
 		changeExplosion();
+		changeTime();
 		checkCollision();
 		removeUselessThings();
 	}
 
 	function changeCursorPos(idx) {
 		cursorX = chooseCharPosX[idx] + charSizes[idx].width/2 - 9;
+	}
+
+	function getTimeText() {
+		var timeSecText = timeSec.toString();
+		if(timeSec < 10) {
+			timeSecText = "0" + timeSecText;
+		}
+
+		return timeMin + ":" + timeSecText;
+	}
+
+	function getKillText() {
+		return "KILL : " + monsterKills + "/" + monsterKillMax;
 	}
 
 	function moveBackground() {
@@ -233,7 +294,7 @@ $(document).ready(function() {
 		if(RIGHTMOVE) charPosX += charMovingSpeed;
 		if(DOWNMOVE) charPosY += charMovingSpeed;
 		if(charPosX < 0) charPosX = 0;
-		if(charPosY < 0) charPosY = 0;
+		if(charPosY < screenTopBorder) charPosY = screenTopBorder;
 		if(charPosX > screenWidth*(2/3) - charSizes[cursorIdx].width) charPosX = screenWidth*(2/3)- charSizes[cursorIdx].width;
 		if(charPosY > screenHeight - charSizes[cursorIdx].height) charPosY = screenHeight - charSizes[cursorIdx].height;
 	}
@@ -248,9 +309,13 @@ $(document).ready(function() {
 		for(var i=0;i<monsterList.length;i++) {
 			monsterList[i].x -= monsterMovingSpeed[monsterList[i].idx];
 
+			if(sceneCount%3 !=0) continue;
+
 			var moveYRandom = parseInt(Math.random() * 3);
-			if(moveYRandom == 0 && monsterList[i].y > 0) monsterList[i].y -= Math.random() * 5;
+			if(moveYRandom == 0) monsterList[i].y -= Math.random() * 5;
 			if(moveYRandom == 1 && monsterList[i].y < screenHeight - monsterList[i].height) monsterList[i].y += Math.random() * 5;
+
+			if(monsterList[i].y < screenTopBorder) monsterList[i].y = screenTopBorder;
 		}
 	}
 
@@ -263,9 +328,20 @@ $(document).ready(function() {
 		}
 	}
 
+	function changeTime() {
+		if(sceneCount%50 != 0) return;
+		if(timeSec > 0) timeSec--;
+		else {
+			if(timeMin > 0) {
+				timeMin--;
+				timeSec = 59;
+			}
+		}
+	}
+
 	function createMonster() {
 		var monsterIdx = parseInt(Math.random() * monsterImgs.length);
-		var monsterY = Math.random() * (screenHeight - monsterSizes[monsterIdx].height/2);
+		var monsterY = screenTopBorder + Math.random() * (screenHeight - monsterSizes[monsterIdx].height/2 - screenTopBorder);
 		var newMonster = {
 			idx: monsterIdx,
 			x: screenWidth,
@@ -297,6 +373,9 @@ $(document).ready(function() {
 						isEnd: false
 					}
 
+					skillBar += 20;
+					if(skillBar > 100) skillBar = 100;
+					if(monsterKills < monsterKillMax) monsterKills++;
 					explosionList.push(newExplosion);
 				}
 			}
