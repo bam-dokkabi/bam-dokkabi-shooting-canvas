@@ -70,6 +70,9 @@ $(document).ready(function() {
 	var curStage = 0;
 	var monsterKills = 0;
 	var monsterKillMax = 30;
+	var isPlaying = true;
+	var showGameOver = false;
+	var completeGameOver = false;
 
 	var chooseChar1 = new Image();
 	var chooseChar2 = new Image();
@@ -90,6 +93,7 @@ $(document).ready(function() {
 	var skillBarFrameImg = new Image();
 	var skillBarImg = new Image();
 	var skillMaxImg = new Image();
+	var gameOverImg = new Image();
 
 	chooseChar1.src = "images/c01.png";
 	chooseChar2.src = "images/c02.png";
@@ -130,6 +134,7 @@ $(document).ready(function() {
 	skillBarFrameImg.src = "images/skill_bar.png";
 	skillBarImg.src = "images/skill_bar2.png";
 	skillMaxImg.src = "images/max.png";
+	gameOverImg.src = "images/gameover.png";
 
 
 	var chooseCharPosX = [250, 350, 450, 550];
@@ -152,7 +157,7 @@ $(document).ready(function() {
 	function drawScreen() {
 		if(scene==1) {
 			drawScene1();
-		} else if(scene==2) {
+		} else if(scene==2 && !completeGameOver) {
 			drawScene2();
 		}
 	}
@@ -255,7 +260,17 @@ $(document).ready(function() {
 		changeExplosion();
 		changeTime();
 		checkCollision();
+		doPlayerCollision();
 		removeUselessThings();
+
+		if(showGameOver) {
+			context.drawImage(gameOverImg, screenWidth/2 - 88, screenHeight/2 - 13);
+			completeGameOver = true;
+		}
+
+		if(!isPlaying) {
+			showGameOver = true;
+		}
 	}
 
 	function changeCursorPos(idx) {
@@ -372,12 +387,77 @@ $(document).ready(function() {
 						height: explosionSizes[0].height,
 						isEnd: false
 					}
+					explosionList.push(newExplosion);
 
 					skillBar += 20;
 					if(skillBar > 100) skillBar = 100;
 					if(monsterKills < monsterKillMax) monsterKills++;
-					explosionList.push(newExplosion);
+					
 				}
+			}
+		}
+	}
+
+	function checkIncluding(charEdges, monsterObj) {
+		if(charEdges[0].x <= monsterObj.x
+			&& charEdges[0].y <= monsterObj.y
+			&& charEdges[1].x >= monsterObj.x + monsterObj.width
+			&& charEdges[1].y <= monsterObj.y
+			&& charEdges[2].x <= monsterObj.x
+			&& charEdges[2].y >= monsterObj.y + monsterObj.height
+			&& charEdges[3].x >= monsterObj.x + monsterObj.width
+			&& charEdges[3].y >= monsterObj.y + monsterObj.height) {
+			return true;
+		}
+
+		return false;
+	}
+
+	function checkPlayerCollision(monsterObj) {
+		var charEdges = [];
+		charEdges.push({x: charPosX, y: charPosY});
+		charEdges.push({x: charPosX + charSizes[cursorIdx].width, y: charPosY});
+		charEdges.push({x: charPosX, y: charPosY + charSizes[cursorIdx].height});
+		charEdges.push({x: charPosX + charSizes[cursorIdx].width, y: charPosY + charSizes[cursorIdx].height});
+
+		for(var i=0;i<charEdges.length;i++) {
+			var checkPos = charEdges[i];
+
+			if(checkPos.x > monsterObj.x 
+				&& checkPos.x < monsterObj.x + monsterObj.width 
+				&& checkPos.y > monsterObj.y 
+				&& checkPos.y < monsterObj.y + monsterObj.height) {
+				console.log('collide');
+				return {isCollide: true, x: checkPos.x, y: checkPos.y};
+			}
+		}
+
+		if(checkIncluding(charEdges, monsterObj)) {
+			return {isCollide: true, x: (monsterObj.x + monsterObj.width/2), y: (monsterObj.y + monsterObj.height/2)};
+		}
+
+		return {isCollide : false, x:0, y:0};
+	}
+
+	function doPlayerCollision() {
+		for(var i=monsterList.length-1;i>=0;i--) {
+			var checkObj = checkPlayerCollision(monsterList[i]);
+			if(checkObj.isCollide) {
+				var newExplosion = {
+					imgIdx: 0,
+					x: checkObj.x - explosionSizes[0].width/2,
+					y: checkObj.y - explosionSizes[0].height/2,
+					width: explosionSizes[0].width,
+					height: explosionSizes[0].height,
+					isEnd: false
+				}
+				explosionList.push(newExplosion);
+				life--;
+				if(life<=0) {
+					life = 0;
+					isPlaying = false;
+				}
+				monsterList[i].isDead = true;
 			}
 		}
 	}
