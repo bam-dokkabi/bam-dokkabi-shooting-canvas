@@ -12,8 +12,39 @@
         url('../fonts/DoHyeon.eot') format('embedded-opentype');
 }
 
+/* SandollGothicB */
+@font-face {
+    font-family: 'SandollGothicB';
+    font-style: normal;
+    font-weight: 400;
+    src: local('SandollGothicB'),
+        url('../fonts/SandollGothicB.ttf') format('truetype'),
+        url('../fonts/SandollGothicB.otf') format('opentype')
+}
+
+/* SandollGothicL */
+@font-face {
+    font-family: 'SandollGothicL';
+    font-style: normal;
+    font-weight: 400;
+    src: local('SandollGothicL'),
+        url('../fonts/SandollGothicL.ttf') format('truetype'),
+        url('../fonts/SandollGothicL.otf') format('opentype')
+}
+
+/* SandollGothicM */
+@font-face {
+    font-family: 'SandollGothicM';
+    font-style: normal;
+    font-weight: 400;
+    src: local('SandollGothicM'),
+        url('../fonts/SandollGothicM.ttf') format('truetype')
+        url('../fonts/SandollGothicM.otf') format('opentype')
+}
+
 html {
 	background: url('../images/bg.png') no-repeat left top;
+	overflow: hidden;
 }
 
 html, body {
@@ -22,28 +53,361 @@ html, body {
 }
 
 body {
-	overflow: hidden;
+	
+}
+
+#container {
+	width: 100%;
+	height: 100%;
 }
 
 #container, .wrapper {
-	width: 100%;
 	text-align: center;
 }
 
 .wrapper {
+	width: 100%;
 	position: relative;
 }
 
-.gameFrame {
-	margin: 0 auto;
-	width: 1115px;
-	height: 895px;
-	background: url('../images/game.png') no-repeat left top;
+.game-frame {
+	position: absolute;
+	left: 381px;
+	top: 85px;
+	width: 1152px;
+	height: 830px;
+	background: url('../images/game_box.png') no-repeat left top;
 	background-size: cover;
 	z-index: 1;
 }
 
-#gameCanvas {
-	margin-top: 153px;
+#game-canvas {
+	margin-top: 34px;
 	z-index: 2;
 }
+
+.game-btn-space {
+	position: absolute;
+	left: 218px;
+	top: 707px;
+	width: 102px;
+	height: 102px;
+	background: url('../images/game_btn.png') no-repeat left top;
+}
+
+.game-btn-enter {
+	position: absolute;
+	left: 324px;
+	top: 716px;
+	width: 87px;
+	height: 32px;
+	background: url('../images/enter_btn.png') no-repeat left top;
+}
+
+.game-btn-arrow {
+	position: absolute;
+	left: 418px;
+	top: 706px;
+	width: 102px;
+	height: 102px;
+	background: url('../images/game_btn.png') no-repeat left top;
+}
+
+.game-btn-arrow-01 {
+	position: absolute;
+	left: 39px;
+	top: 12px;
+	width: 25px;
+	height: 24px;
+	background: url('../images/btn_top.png') no-repeat left top;
+}
+
+.game-btn-arrow-02 {
+	position: absolute;
+	left: 12px;
+	top: 39px;
+	width: 24px;
+	height: 25px;
+	background: url('../images/btn_left.png') no-repeat left top;
+}
+
+.game-btn-arrow-03 {
+	position: absolute;
+	left: 67px;
+	top: 39px;
+	width: 24px;
+	height: 25px;
+	background: url('../images/btn_right.png') no-repeat left top;
+}
+
+.game-btn-arrow-04 {
+	position: absolute;
+	left: 39px;
+	top: 67px;
+	width: 25px;
+	height: 24px;
+	background: url('../images/btn_bottom.png') no-repeat left top;
+}
+
+.btn-text {
+	text-align: center;
+	color: #973034;
+	font-family: DoHyeon;
+}
+
+.game-btn-space > .btn-text {
+	font-size: 20px;
+	margin-top: 40px;
+}
+
+.game-btn-enter > .btn-text {
+	font-size: 16px;
+	margin-top: 7px;
+}
+
+.pageTitle {
+	position: absolute;
+	left: 79px;
+	top: 83px;
+	width: 225px;
+	height: 99px;
+	background: url('../images/title.png') no-repeat left top;
+}
+
+.bar01 {
+	position: absolute;
+	left: 177px;
+	top: 244px;
+	width: 225px;
+	height: 99px;
+	background: url('../images/bar.png') no-repeat left top;
+}
+
+.summary-text1 {
+	position: absolute;
+	left: 72px;
+	top: 304px;
+	width: 240px;
+	height: 53px;
+	font-family: SandollGothicM;
+	font-size: 20px;
+	color: white;
+}
+
+.summary-text2 {
+	position: absolute;
+	left: 40px;
+	top: 387px;
+	width: 300px;
+	height: 41px;
+	font-family: SandollGothicM;
+	font-size: 20px;
+	color: #BD534C;
+}
+
+.bar02 {
+	position: absolute;
+	left: 177px;
+	top: 466px;
+	width: 28px;
+	height: 22px;
+	background: url('../images/bar02.png') no-repeat left top;
+}
+
+.map-guide {
+	position: absolute;
+	left: 42px;
+	top: 534px;
+	width: 297px;
+	height: 407px;
+	background: url('../images/map_guide.png') no-repeat left top;
+}
+
+.map-dot-01 {
+	position: absolute;
+	left: 84px;
+	top: 89px;
+	width: 53px;
+	height: 53px;
+	background: url('../images/map_dot2.png') no-repeat left top;
+}
+
+.map-dot-02 {
+	position: absolute;
+	left: 166px;
+	top: 187px;
+	width: 53px;
+	height: 53px;
+	background: url('../images/map_dot1.png') no-repeat left top;
+}
+
+.map-dot-03 {
+	position: absolute;
+	left: 57px;
+	top: 277px;
+	width: 53px;
+	height: 53px;
+	background: url('../images/map_dot1.png') no-repeat left top;
+}
+
+.map-dot-04 {
+	position: absolute;
+	left: 177px;
+	top: 323px;
+	width: 53px;
+	height: 53px;
+	background: url('../images/map_dot1.png') no-repeat left top;
+}
+
+.map-number-on {
+	width: 100%;
+	height: 100%;
+	color: white;
+	font-family: DoHyeon;
+	font-size: 30px;
+	margin-top: 10px;
+	text-align: center;
+}
+
+.map-number-off {
+	width: 100%;
+	height: 100%;
+	color: #474747;
+	font-family: DoHyeon;
+	font-size: 28px;
+	margin-top: 12px;
+	text-align: center;
+}
+
+.map-name-01 {
+	position: absolute;
+	left: 70px;
+	top: 150px;
+	font-family: SandollGothicB;
+	color:white;
+	text-align: center;
+	font-size: 16px;
+}
+
+.map-name-02 {
+	position: absolute;
+	left: 172px;
+	top: 244px;
+	font-family: SandollGothicB;
+	color: #474747;
+	text-align: center;
+	font-size: 16px;
+}
+
+.map-name-03 {
+	position: absolute;
+	left: 62px;
+	top: 335px;
+	font-family: SandollGothicB;
+	color: #474747;
+	text-align: center;
+	font-size: 16px;
+}
+
+.map-name-04 {
+	position: absolute;
+	left: 186px;
+	top: 378px;
+	font-family: SandollGothicB;
+	color: #474747;
+	text-align: center;
+	font-size: 16px;
+}
+
+.map-pic-01 {
+	position: absolute;
+	left: 87px;
+	top: 74px;
+	width: 48px;
+	height: 17px;
+	background: url('../images/map1.png') no-repeat left top;
+}
+
+.map-pic-02 {
+	position: absolute;
+	left: 172px;
+	top: 167px;
+	width: 43px;
+	height: 21px;
+	background: url('../images/map2.png') no-repeat left top;
+}
+
+.map-pic-03 {
+	position: absolute;
+	left: 60px;
+	top: 252px;
+	width: 46px;
+	height: 26px;
+	background: url('../images/map3.png') no-repeat left top;
+}
+
+.map-pic-04 {
+	position: absolute;
+	left: 184px;
+	top: 312px;
+	width: 38px;
+	height: 14px;
+	background: url('../images/map4.png') no-repeat left top;
+}
+
+.close-btn {
+	position: absolute;
+	right: 0;
+	top: 97px;
+	width: 107px;
+	height: 147px;
+	background: url('../images/close.png'); no-repeat left top;
+}
+
+.info-panel {
+	position: absolute;
+	right: 0;
+	top: 333px;
+	width: 307px;
+	height: 606px;
+	background: url('../images/info.png'); no-repeat left top;
+}
+
+.info-panel-title {
+	position: absolute;
+	left: 60px;
+	top: 60px;
+	width: 202px;
+	height: 40px;
+	color: #A21511;
+	font-family: DoHyeon;
+	font-size: 30px;
+}
+
+.info-panel-content {
+	position: absolute;
+	left: 42px;
+	top: 147px;
+	color: #D3D3D3;
+	font-family: SandollGothicL;
+	font-size: 20px;
+	line-height: 1.3em;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
