@@ -353,10 +353,12 @@ $(document).ready(function() {
 			context.restore();
 			var lifeX = monsterList[i].x;
 			var lifeY = monsterList[i].y + monsterList[i].height + 10;
-			for(var j=0;j<monsterList[i].life;j++) {
-				context.fillStyle = "red";
-				context.fillRect(lifeX, lifeY, lifeBarWidth, lifeBarHeight);
-				lifeX += lifeBarWidth + lifeBarMargin;
+			if(monsterStats[monsterList[i].idx].life > 1) {
+				for(var j=0;j<monsterList[i].life;j++) {
+					context.fillStyle = "red";
+					context.fillRect(lifeX, lifeY, lifeBarWidth, lifeBarHeight);
+					lifeX += lifeBarWidth + lifeBarMargin;
+				}
 			}
 		}
 		
@@ -424,7 +426,7 @@ $(document).ready(function() {
 		}
 
 		if(showingNextStage) {
-			context.drawImage(nextStageImg, screenWidth/2 - 147, screenHeight/2 - 19);
+			context.drawImage(nextStageImg, screenWidth/2 - 147, screenHeight/2 - 19, 294, 38);
 		}
 
 		if(!isPlaying) {
@@ -543,7 +545,7 @@ $(document).ready(function() {
 		var monsterTableIdx = parseInt(Math.random() * baseMonsterTypeNum);
 		var monsterIdx = stageMonsters[mainStageIdx][subStageIdx].base[monsterTableIdx];
 
-		var monsterY = screenTopBorder + Math.random() * (screenHeight - screenTopBorder - monsterSizes[monsterIdx].height- screenTopBorder);
+		var monsterY = screenTopBorder + charSizes[cursorIdx].height/2 + Math.random() * (screenHeight - screenTopBorder - monsterSizes[monsterIdx].height- screenTopBorder - charSizes[cursorIdx].height);
 		var newMonster = {
 			idx: monsterIdx,
 			x: screenWidth,
@@ -561,13 +563,13 @@ $(document).ready(function() {
 
 		monsterList.push(newMonster);
 
-		var randomForSparse = parseInt(Math.random() * 2);
-		if(randomForSparse == 1) {
+		var randomForSparse = parseInt(Math.random() * 3);
+		if(randomForSparse == 0) {
 			var sparseMonsterTypeNum = stageMonsters[mainStageIdx][subStageIdx].sparse.length;
 			if(sparseMonsterTypeNum == 0) return;
 			var sparseMonsterTableIdx = parseInt(Math.random() * sparseMonsterTypeNum);
+			monsterY = screenTopBorder + charSizes[cursorIdx].height/2 + Math.random() * (screenHeight - screenTopBorder - monsterSizes[sparseMonsterTableIdx].height- screenTopBorder - charSizes[cursorIdx].height);
 			var sparseMonsterIdx = stageMonsters[mainStageIdx][subStageIdx].sparse[sparseMonsterTableIdx];
-			console.log(sparseMonsterIdx);
 			var monsterY = screenTopBorder + Math.random() * (screenHeight - screenTopBorder - monsterSizes[sparseMonsterIdx].height- screenTopBorder);
 			var newMonster = {
 				idx: sparseMonsterIdx,
@@ -590,14 +592,14 @@ $(document).ready(function() {
 
 	function createMissile() {
 		
-		if(cursorIdx == 2) {
+		if(cursorIdx == 3) {
 			var newMissile1 = {};
 			var newMissile2 = {};
 
 			newMissile1.idx = 3;
 			newMissile1.x = charPosX+charSizes[cursorIdx].width;
 			newMissile1.y = charPosY+charSizes[cursorIdx].height/2-missileSizes[cursorIdx].height;
-			newMissile1.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * screenWidth / 3;
+			newMissile1.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * (screenWidth - charPosX - charSizes[cursorIdx].width) / 3;
 			newMissile1.width = missileSizes[cursorIdx].width;
 			newMissile1.height = missileSizes[cursorIdx].height;
 			newMissile1.isHit = false;
@@ -610,7 +612,7 @@ $(document).ready(function() {
 			newMissile2.idx = 4;
 			newMissile2.x = charPosX+charSizes[cursorIdx].width;
 			newMissile2.y = charPosY+charSizes[cursorIdx].height/2+missileSizes[cursorIdx].height;
-			newMissile2.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * screenWidth / 3;
+			newMissile2.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * (screenWidth - charPosX - charSizes[cursorIdx].width) / 3;
 			newMissile2.width = missileSizes[cursorIdx].width;
 			newMissile2.height = missileSizes[cursorIdx].height;
 			newMissile2.isHit = false;
@@ -619,13 +621,13 @@ $(document).ready(function() {
 			newMissile2.angle = 0;
 
 			missileList.push(newMissile2);
-		} else if(cursorIdx == 3) {
+		} else if(cursorIdx == 2) {
 			var newMissile = {};
 
 			newMissile.idx = cursorIdx;
 			newMissile.x = charPosX+charSizes[cursorIdx].width;
 			newMissile.y = charPosY+charSizes[cursorIdx].height/2-missileSizes[cursorIdx].height/2;
-			newMissile.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * screenWidth / 3;
+			newMissile.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * (screenWidth - charPosX - charSizes[cursorIdx].width) / 3;
 			newMissile.width = missileSizes[cursorIdx].width;
 			newMissile.height = missileSizes[cursorIdx].height;
 			newMissile.isHit = false;
@@ -640,7 +642,7 @@ $(document).ready(function() {
 			newMissile.idx = cursorIdx;
 			newMissile.x = charPosX+charSizes[cursorIdx].width;
 			newMissile.y = charPosY+charSizes[cursorIdx].height/2-missileSizes[cursorIdx].height/2;
-			newMissile.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * screenWidth / 3;
+			newMissile.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * (screenWidth - charPosX - charSizes[cursorIdx].width) / 3;
 			newMissile.width = missileSizes[cursorIdx].width;
 			newMissile.height = missileSizes[cursorIdx].height;
 			newMissile.isHit = false;
@@ -762,9 +764,7 @@ $(document).ready(function() {
 				setTimeout(function() {showingMainStage = false;}, 3000);
 				var pre;
 				$('.map-guide > .map-dot').each(function(idx, item) {
-					console.log('in each');
 					if(idx == mainStageIdx) {
-						console.log('change css');
 						$(this).css('background', 'url(images/map_dot2.png) no-repeat left top');
 						$(this).children().css('color', 'white');
 						pre.css('background', 'url(images/map_dot1.png) no-repeat left top');
@@ -775,7 +775,6 @@ $(document).ready(function() {
 				});
 
 				$('.map-guide > .map-name').each(function(idx, item) {
-					console.log('change css');
 					if(idx == mainStageIdx) {
 						$(this).css('color', 'white');
 						pre.css('color', '#474747');
@@ -879,7 +878,6 @@ $(document).ready(function() {
 		missileList = [];
 
 		$('.map-guide > .map-dot').each(function(idx, item) {
-			console.log('in each');
 			if(idx == 0) {
 				$(this).css('background', 'url(images/map_dot2.png) no-repeat left top');
 				$(this).children().css('color', 'white');
@@ -890,7 +888,6 @@ $(document).ready(function() {
 		});
 
 		$('.map-guide > .map-name').each(function(idx, item) {
-			console.log('change css');
 			if(idx == mainStageIdx) {
 				$(this).css('color', 'white');
 			} else {
