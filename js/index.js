@@ -11,7 +11,6 @@ $(document).ready(function() {
 	var screenBottomBorder = 30;
 	var scene = 1;
 	var screenOpacity = 0;
-	var startBtnColor = "#df6f5f";
 	var lifeBarMargin = 2;
 	var lifeBarWidth = 8;
 	var lifeBarHeight = 3;
@@ -591,7 +590,6 @@ $(document).ready(function() {
 	}
 
 	function createMissile() {
-		
 		if(cursorIdx == 3) {
 			var newMissile1 = {};
 			var newMissile2 = {};
@@ -599,7 +597,7 @@ $(document).ready(function() {
 			newMissile1.idx = 3;
 			newMissile1.x = charPosX+charSizes[cursorIdx].width;
 			newMissile1.y = charPosY+charSizes[cursorIdx].height/2-missileSizes[cursorIdx].height;
-			newMissile1.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * (screenWidth - charPosX - charSizes[cursorIdx].width) / 3;
+			newMissile1.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * (screenWidth - 200) / 3;
 			newMissile1.width = missileSizes[cursorIdx].width;
 			newMissile1.height = missileSizes[cursorIdx].height;
 			newMissile1.isHit = false;
@@ -612,7 +610,7 @@ $(document).ready(function() {
 			newMissile2.idx = 4;
 			newMissile2.x = charPosX+charSizes[cursorIdx].width;
 			newMissile2.y = charPosY+charSizes[cursorIdx].height/2+missileSizes[cursorIdx].height;
-			newMissile2.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * (screenWidth - charPosX - charSizes[cursorIdx].width) / 3;
+			newMissile2.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * (screenWidth - 200) / 3;
 			newMissile2.width = missileSizes[cursorIdx].width;
 			newMissile2.height = missileSizes[cursorIdx].height;
 			newMissile2.isHit = false;
@@ -627,7 +625,7 @@ $(document).ready(function() {
 			newMissile.idx = cursorIdx;
 			newMissile.x = charPosX+charSizes[cursorIdx].width;
 			newMissile.y = charPosY+charSizes[cursorIdx].height/2-missileSizes[cursorIdx].height/2;
-			newMissile.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * (screenWidth - charPosX - charSizes[cursorIdx].width) / 3;
+			newMissile.endX = charPosX+charSizes[cursorIdx].width + charStats[cursorIdx].range * (screenWidth - 200) / 3;
 			newMissile.width = missileSizes[cursorIdx].width;
 			newMissile.height = missileSizes[cursorIdx].height;
 			newMissile.isHit = false;
@@ -711,8 +709,8 @@ $(document).ready(function() {
 					
 					var newExplosion = {
 						imgIdx: 0,
-						x: monsterList[j].x + monsterList[j].width - explosionSizes[0].width/2,
-						y: monsterList[j].y + monsterList[j].height - explosionSizes[0].height/2,
+						x: monsterList[j].x + monsterList[j].width/2 - explosionSizes[0].width/2,
+						y: monsterList[j].y + monsterList[j].height/2 - explosionSizes[0].height/2,
 						width: explosionSizes[0].width,
 						height: explosionSizes[0].height,
 						isEnd: false
@@ -831,8 +829,12 @@ $(document).ready(function() {
 
 	function removeUselessThings() {
 		for(var i=missileList.length-1;i>=0;i--) {
-			if(missileList[i].x > missileList[i].endX
-				|| missileList[i].x > screenWidth
+			var missileCoor = {};
+			leftTemp = missileList[i].x + missileList[i].width * (1 - Math.cos(missileList[i].angle * Math.PI/180));
+
+			missileCoor.left = leftTemp < rightTemp ? leftTemp : rightTemp;
+			if(missileCoor.left > missileList[i].endX
+				|| missileCoor.left > screenWidth
 				|| missileList[i].isHit) {
 				missileList.splice(i, 1);
 			}
