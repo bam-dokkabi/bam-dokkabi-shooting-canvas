@@ -44,19 +44,39 @@ $(document).ready(function() {
 	];
 
 	var monsterSizes = [
+		//0
 		{width: 27, height: 27},
 		{width: 51, height: 44},
 		{width: 29, height: 45},
 		{width: 31, height: 62},
-		{width: 41, height: 61}
+		{width: 41, height: 61},
+		//5
+		{width: 52, height: 54},
+		{width: 56, height: 55},
+		{width: 33, height: 55},
+		{width: 60, height: 61},
+		{width: 41, height: 61},
+		//10
+		{width: 81, height: 82},
+		{width: 82, height: 67},
+		{width: 75, height: 63},
+		{width: 78, height: 57},
+		{width: 73, height: 44},
+		//15
+		{width: 76, height: 56},
+		{width: 64, height: 44},
+		{width: 81, height: 77}
 	];
 
 	var bossSizes = [
-		[{width: 204, height: 134}, {width: 95, height: 39},{width: 95, height: 39}]
+		[{width: 204, height: 134}, {width: 95, height: 39},{width: 95, height: 39}],
+		[{width: 78, height: 104}, {width: 78, height: 104}, {width: 78, height: 104}],
+		[{width: 483, height: 277}],
+		[{width: 64, height: 104}]
 	];
 
 	var bossMissileSizes = [
-		[{width: 34, height: 16}, {width: screenWidth - 100, height: 32}, {width: screenWidth - 100, height: 32}]
+		[{width: 34, height: 16}, {width: screenWidth, height: 12}, {width: screenWidth, height: 12}]
 	];
 
 	var bossMissileStats = [
@@ -68,31 +88,46 @@ $(document).ready(function() {
 	]
 
 	var monsterStats = [
-	//1
+		//0
 		{life: 1, speed: 1, isOpacityChange: false},
 		{life: 2, speed: 1, isOpacityChange: false},
 		{life: 1, speed: 1, isOpacityChange: true},
 		{life: 1, speed: 2, isOpacityChange: true},
 		{life: 1, speed: 1.5, isOpacityChange: false},
-	//5
+		//5
 		{life: 1, speed: 1.5, isOpacityChange: false},
 		{life: 1, speed: 1.5, isOpacityChange: false},
 		{life: 1, speed: 1.5, isOpacityChange: false},
 		{life: 1, speed: 1.5, isOpacityChange: false},
 		{life: 1, speed: 1.5, isOpacityChange: false},
-	//10
+		//10
 		{life: 1, speed: 2.5, isOpacityChange: false},
 		{life: 5, speed: 1.5, isOpacityChange: false},
 		{life: 5, speed: 1.5, isOpacityChange: false},
 		{life: 1, speed: 1.5, isOpacityChange: false},
 		{life: 1, speed: 1.5, isOpacityChange: false},
+		//15
+		{life: 1, speed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, isOpacityChange: false}
 	];
 
 	var bossStats = [
 		[
-			{life: 10, speed: 1, attackDuration: 2000, y: screenHeight/2, moveHorizontal: true, isStopDuringAttack: false, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}, 
-			{life: 0, speed: 1, attackDuration: 5000, y: screenHeight/4, moveHorizontal: false, isStopDuringAttack: true, canHit: false, moveBorder: [0, screenWidth, screenTopBorder, screenHeight/2 - bossSizes[0][1].height]},
-			{life: 0, speed: 1, attackDuration: 5000, y: screenHeight*3/4, moveHorizontal: false, isStopDuringAttack: true, canHit: false, moveBorder: [0, screenWidth, screenHeight/2, screenHeight - screenBottomBorder - bossSizes[0][1].height]}
+			{life: 10, speed: 1, attackDuration: 4000, y: screenHeight/2, moveHorizontal: true, isStopDuringAttack: false, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}, 
+			{life: 0, speed: 1, attackDuration: 8000, y: screenHeight/4, moveHorizontal: false, isStopDuringAttack: true, canHit: false, moveBorder: [0, screenWidth, screenTopBorder, screenHeight/2 - bossSizes[0][1].height]},
+			{life: 0, speed: 1, attackDuration: 10000, y: screenHeight*3/4, moveHorizontal: false, isStopDuringAttack: true, canHit: false, moveBorder: [0, screenWidth, screenHeight/2, screenHeight - screenBottomBorder - bossSizes[0][1].height]}
+		],
+		[
+			{life: 10, speed: 1, attackDuration: 4000, y: screenHeight/2, moveHorizontal: false, isStopDuringAttack: false, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}, 
+			{life: 10, speed: 1, attackDuration: 4000, y: screenHeight/2, moveHorizontal: true, isStopDuringAttack: false, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}, 
+			{life: 10, speed: 1, attackDuration: 4000, y: screenHeight/2, moveHorizontal: true, isStopDuringAttack: false, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}
+		],
+		[
+			{life: 10, speed: 1, attackDuration: 4000, y: screenHeight/2, moveHorizontal: true, isStopDuringAttack: false, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}
+		],
+		[
+			{life: 10, speed: 1, attackDuration: 4000, y: screenHeight/2, moveHorizontal: true, isStopDuringAttack: false, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}	
 		]
 	];
 
@@ -115,19 +150,19 @@ $(document).ready(function() {
 	];
 	var mainStageNum = 4;
 	var subStageNum = [5,5,5,5];
-	var numOfBosses = [3,0,0,0];
+	var numOfBosses = [3,3,1,1];
 	var bossFrames = [
 		[2,1,1],
 		[1,1,1],
-		[1,1,1],
-		[1,1,1]
+		[3],
+		[1]
 	];
 
 	var bossMissileFrames = [
-		[1,11,11],
+		[1,1,1],
 		[0,0,0],
-		[0,0,0],
-		[0,0,0]
+		[0],
+		[0]
 	]
 
 	var stageMonsters = [
@@ -208,6 +243,8 @@ $(document).ready(function() {
 	var heartXStart = 60;
 	var heartXDiff = 20;
 	var bossReadyForPlayer = false;
+	var laserBeamY1, laserBeamY2;
+
 
 	var chooseChar1 = new Image();
 	var chooseChar2 = new Image();
@@ -226,11 +263,6 @@ $(document).ready(function() {
 	var missileImg5 = new Image();
 	var backImg = new Image();
 	var backImgBoss1 = new Image();
-	var monsterImg1 = new Image();
-	var monsterImg2 = new Image();
-	var monsterImg3 = new Image();
-	var monsterImg4 = new Image();
-	var monsterImg5 = new Image();
 	var skillBarFrameImg = new Image();
 	var skillBarImg = new Image();
 	var skillMaxImg = new Image();
@@ -262,13 +294,13 @@ $(document).ready(function() {
 
 	backImg.src = "images/game_bg1.png";
 	backImgBoss1.src = "images/game_bg2.png";
+	var monsterImgs = [];
+	for(var i=0;i<18;i++) {
+		var newMonsterImg = new Image();
+		newMonsterImg.src = "images/enemy/e" + (i+1) + ".png";
+		monsterImgs.push(newMonsterImg);
+	}
 
-	monsterImg1.src = "images/enemy/e01.png";
-	monsterImg2.src = "images/enemy/e02.png";
-	monsterImg3.src = "images/enemy/e03.png";
-	monsterImg4.src = "images/enemy/e04.png";
-	monsterImg5.src = "images/enemy/e05.png";
-	var monsterImgs = [monsterImg1,monsterImg2,monsterImg3,monsterImg4,monsterImg5];
 
 	var bossImgs = [];
 	var bossMissileImgs = [];
@@ -434,12 +466,31 @@ $(document).ready(function() {
 			changeBossMissileImg();
 			moveBoss();
 			for(var i=0;i<bossMissileList.length;i++) {
-
+				var width = bossMissileList[i].width;
+				var x = bossMissileList[i].x;
+				var y = bossMissileList[i].y;
+				var height = bossMissileList[i].height;
+				if(bossMissileList[i].isBeam) {
+					if(bossMissileList[i].maxStep - bossMissileList[i].step >= 20) {
+						width *= bossMissileList[i].step / (bossMissileList[i].maxStep - 20);
+					}
+					x += bossMissileList[i].width - width;
+					if(mainStageIdx == 0 && bossMissileList[i].bossIdx == 1) {
+						y = laserBeamY1;
+					} else if(mainStageIdx == 0 && bossMissileList[i].bossIdx ==2) {
+						y = laserBeamY2;
+					}
+					if(bossMissileList[i].maxStep - bossMissileList[i].step < 20) {
+						height *= (bossMissileList[i].maxStep - bossMissileList[i].step) / 20;
+					}
+					
+				}
+				
 				context.drawImage(bossMissileImgs[mainStageIdx][bossMissileList[i].bossIdx][bossMissileList[i].idx],
-					bossMissileList[i].x,
-					bossMissileList[i].y,
-					bossMissileList[i].width,
-					bossMissileList[i].height);
+					x,
+					y,
+					width,
+					height);
 			}
 			for(var i=0;i<bossList.length;i++) {
 				context.drawImage(bossImgs[mainStageIdx][bossList[i].bossIdx][bossList[i].idx], bossList[i].x, bossList[i].y);	
@@ -699,7 +750,7 @@ $(document).ready(function() {
 
 	function changeBossMissileImg() {
 		if(sceneCount%10 !=0) {
-			return;
+			//return;
 		}
 
 		for(var i=0;i<bossMissileList.length;i++) {
@@ -762,6 +813,9 @@ $(document).ready(function() {
 				bossList[i].x += bossList[i].moveX;
 			}
 			bossList[i].y += bossList[i].moveY;
+			if(mainStageIdx == 0 && bossList[i].bossIdx == 1) laserBeamY1 = bossList[i].y + bossList[i].height/2;
+			if(mainStageIdx == 0 && bossList[i].bossIdx == 2) laserBeamY2 = bossList[i].y + bossList[i].height/2;
+
 
 			if(bossList[i].x > screenWidth - bossList[i].width) bossList[i].x = screenWidth - bossList[i].width;
 			if(bossList[i].y < screenTopBorder) bossList[i].y = screenTopBorder;
@@ -1014,7 +1068,7 @@ $(document).ready(function() {
 					stageIdx: mainStageIdx,
 					bossIdx: bossObj.bossIdx,
 					idx: 0,
-					x: bossObj.x - bossMissileSizes[mainStageIdx][bossObj.bossIdx].width + 100,
+					x: bossObj.x - bossMissileSizes[mainStageIdx][bossObj.bossIdx].width - bossObj.width/2,
 					y: bossObj.y + bossObj.height/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].height/2,
 					speed: bossMissileStats[mainStageIdx][bossObj.bossIdx].speed,
 					speedX: 0,
@@ -1026,9 +1080,12 @@ $(document).ready(function() {
 					isHit: false,
 					frames: bossMissileFrames[mainStageIdx][bossObj.bossIdx],
 					step: 0,
-					maxStep: 11,
+					maxStep: 50,
 					isBeam: true
 				};
+
+				if(bossObj.bossIdx == 1) laserBeamY1 = newBossMissile.y + bossObj.height/2;
+				if(bossObj.bossIdx == 2) laserBeamY2 = newBossMissile.y + bossObj.height/2;
 				bossMissileList.push(newBossMissile);
 			}
 		}
@@ -1089,6 +1146,14 @@ $(document).ready(function() {
 					bossKill++;
 
 					if(bossKill > 0) {
+						if(mainStageIdx == 3) {
+							scene = 3;
+							context.fillStyle = "white";
+							context.font = "20px DoHyeon";
+							context.textAlign = "center";
+							context.textBaseline = "center";
+							context.fillText("VICTORY!", screenWidth/2, screenHeight/2);
+						}
 						goNextStage();
 						console.log('endingBossStage true');
 						endingBossStage = true;
@@ -1111,11 +1176,13 @@ $(document).ready(function() {
 				else {
 					skillBar += 20;
 					if(skillBar > 100) skillBar = 100;
-					if(monsterKills < monsterKillMax) {
-						monsterKills++;
+					if(!isBossStage) {
+						if(monsterKills < monsterKillMax) {
+							monsterKills++;
 
-						if(monsterKills == monsterKillMax) {
-							goNextStage();
+							if(monsterKills == monsterKillMax) {
+								goNextStage();
+							}
 						}
 					}
 				}
@@ -1175,7 +1242,7 @@ $(document).ready(function() {
 				bossDestination = -(2736 - screenWidth);
 				bossDestinationDistance = back3X - bossDestination;
 				bossDestinationPer = bossDestinationDistance / 50;
-
+				bossList = [];
 				for(var i=0;i<numOfBosses[mainStageIdx];i++) {
 					var newBoss = {
 						bossIdx: i,
@@ -1251,6 +1318,15 @@ $(document).ready(function() {
 		targetCoor.right = targetObj.x + targetObj.width;
 		targetCoor.top = targetObj.y;
 		targetCoor.bottom = targetObj.y + targetObj.height;
+
+		if(targetObj.isBeam) {
+			if(targetObj.maxStep - targetObj.step >= 20) {
+				targetCoor.left = (targetObj.x + targetObj.width) - (targetObj.width * targetObj.step / (targetObj.maxStep - 20));
+			}
+			if(targetObj.maxStep - targetObj.step < 20) {
+				targetCoor.bottom = (targetObj.y + targetObj.height * (targetObj.maxStep - targetObj.step) / 20); 
+			}
+		}
 
 		if(checkOverrapSquares(charCoor, targetCoor)) {
 			if(isMissile) {
@@ -1342,7 +1418,7 @@ $(document).ready(function() {
 
 		for(var i=bossMissileList.length-1;i>=0;i--) {
 			if(bossMissileList[i].isHit
-				|| bossMissileList[i].x < 0
+				|| (!bossMissileList[i].isBeam && bossMissileList[i].x < 0)
 				|| bossMissileList[i].y <0
 				|| bossMissileList[i].x > screenWidth
 				|| bossMissileList[i].y > screenHeight
