@@ -56,11 +56,11 @@ $(document).ready(function() {
 	];
 
 	var bossMissileSizes = [
-		[{width: 34, height: 16}]
+		[{width: 34, height: 16}, {width: screenWidth - 100, height: 32}, {width: screenWidth - 100, height: 32}]
 	];
 
 	var bossMissileStats = [
-		[],
+		[{speed:5},{speed:0},{speed:0}],
 		[],
 		[],
 		[],
@@ -90,9 +90,9 @@ $(document).ready(function() {
 
 	var bossStats = [
 		[
-			{life: 10, speed: 1, y: screenHeight/2, moveHorizontal: true, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}, 
-			{life: 0, speed: 1, y: screenHeight/4, moveHorizontal: false, canHit: false, moveBorder: [0, screenWidth, screenTopBorder, screenHeight/2 - bossSizes[0][1].height]},
-			{life: 0, speed: 1, y: screenHeight*3/4, moveHorizontal: false, canHit: false, moveBorder: [0, screenWidth, screenHeight/2, screenHeight - screenBottomBorder - bossSizes[0][1].height]}
+			{life: 10, speed: 1, attackDuration: 2000, y: screenHeight/2, moveHorizontal: true, isStopDuringAttack: false, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}, 
+			{life: 0, speed: 1, attackDuration: 5000, y: screenHeight/4, moveHorizontal: false, isStopDuringAttack: true, canHit: false, moveBorder: [0, screenWidth, screenTopBorder, screenHeight/2 - bossSizes[0][1].height]},
+			{life: 0, speed: 1, attackDuration: 5000, y: screenHeight*3/4, moveHorizontal: false, isStopDuringAttack: true, canHit: false, moveBorder: [0, screenWidth, screenHeight/2, screenHeight - screenBottomBorder - bossSizes[0][1].height]}
 		]
 	];
 
@@ -124,10 +124,10 @@ $(document).ready(function() {
 	];
 
 	var bossMissileFrames = [
-		[1,1,1],
-		[1,1,1],
-		[1,1,1],
-		[1,1,1]
+		[1,11,11],
+		[0,0,0],
+		[0,0,0],
+		[0,0,0]
 	]
 
 	var stageMonsters = [
@@ -207,6 +207,7 @@ $(document).ready(function() {
 	var bossKill = 0;
 	var heartXStart = 60;
 	var heartXDiff = 20;
+	var bossReadyForPlayer = false;
 
 	var chooseChar1 = new Image();
 	var chooseChar2 = new Image();
@@ -290,7 +291,7 @@ $(document).ready(function() {
 				bossImgs[i][j].push(newImg);
 			}
 
-			for(var k=0;k<bossMissileFrames;k++) {
+			for(var k=0;k<bossMissileFrames[i][j];k++) {
 				var newImg = new Image();
 				var imgStr = 'images/enemy/ba' + i + '_' + j + '_' + k + '.png';
 				newImg.src = imgStr;
@@ -338,6 +339,7 @@ $(document).ready(function() {
 	var monsterList = [];
 	var explosionList = [];
 	var bossList = [];
+	var bossMissileList = [];
 
 	var drawingIntervalId = setInterval(drawScreen, 20);
 
@@ -418,26 +420,32 @@ $(document).ready(function() {
 
 			drawBossLifeBar(false);
 		}
+
 		if(isBossStage) {
 			if(!movingBossStage) {
 				bossBarY -= 0.1;
 				if(bossBarY < screenHeight - bossBarHeight) bossBarY = screenHeight - bossBarHeight;
 			}
 
-			
 			context.drawImage(backImgBoss1, back3X, 0, 2736, 490);
 			drawBossLifeBar(true);
 			
 			changeBossImg();
+			changeBossMissileImg();
 			moveBoss();
+			for(var i=0;i<bossMissileList.length;i++) {
+
+				context.drawImage(bossMissileImgs[mainStageIdx][bossMissileList[i].bossIdx][bossMissileList[i].idx],
+					bossMissileList[i].x,
+					bossMissileList[i].y,
+					bossMissileList[i].width,
+					bossMissileList[i].height);
+			}
 			for(var i=0;i<bossList.length;i++) {
 				context.drawImage(bossImgs[mainStageIdx][bossList[i].bossIdx][bossList[i].idx], bossList[i].x, bossList[i].y);	
 			}
 			//context.drawImage(bossImgs1[bossImgIdx], back3X+2736-bossSizes[mainStageIdx][0].width, screenHeight/2 - bossSizes[mainStageIdx][0].height/2);
 		}
-
-
-		context.drawImage(gameCharImgs[cursorIdx], charPosX, charPosY);
 
 		for(var i=0;i<missileList.length;i++) {
 			context.save();
@@ -446,6 +454,11 @@ $(document).ready(function() {
 			context.drawImage(missileImgs[missileList[i].idx], -missileList[i].width , 0, missileList[i].width, missileList[i].height);
 			context.restore();
 		}
+
+
+		context.drawImage(gameCharImgs[cursorIdx], charPosX, charPosY);
+
+		
 
 		for(var i=0;i<monsterList.length;i++) {
 			if(monsterList[i].isOpacityChange) {
@@ -535,6 +548,7 @@ $(document).ready(function() {
 		checkCollision();
 		doPlayerCollision();
 		removeUselessThings();
+		createBossMissile();
 
 		if(showGameOver) {
 			context.drawImage(gameOverImg, screenWidth/2 - 88, screenHeight/2 - 13);
@@ -635,6 +649,8 @@ $(document).ready(function() {
 
 				if(back3X == bossDestination) {
 					movingBossStage = false;
+					bossReadyForPlayer = true;
+					setTimeout(function(){bossReadyForPlayer = false;}, 1000);
 					back1X = screenWidth;
 					back2X = screenWidth + 2736;
 					return;
@@ -681,12 +697,35 @@ $(document).ready(function() {
 		}
 	}
 
+	function changeBossMissileImg() {
+		if(sceneCount%10 !=0) {
+			return;
+		}
+
+		for(var i=0;i<bossMissileList.length;i++) {
+			bossMissileList[i].idx++;
+			if(bossMissileList[i].idx >= bossMissileList[i].frames) {
+				bossMissileList[i].idx = 0;
+			}
+
+			bossMissileList[i].step++;
+			if(bossMissileList[i].step > bossMissileList[i].maxStep) {
+				bossMissileList[i].step = 0;
+			}
+		}
+	}
+
 	function moveMissile() {
 		for(var i=0;i<missileList.length;i++) {
 			missileList[i].x += missileMovingSpeed;
 			missileList[i].y += missileMovingSpeed * missileList[i].speedY;
 			missileList[i].angle += missileList[i].speedAngular;
 			if(missileList[i].angle >= 360) missileList[i].angle = 0;
+		}
+
+		for(var i=0;i<bossMissileList.length;i++) {
+			bossMissileList[i].x -= bossMissileList[i].speedX;
+			bossMissileList[i].y -= bossMissileList[i].speedY;
 		}
 	}
 
@@ -707,6 +746,7 @@ $(document).ready(function() {
 	function moveBoss() {
 		if(movingBossStage) return;
 		for(var i=0;i<bossList.length;i++) {
+			//if(bossList[i].isStopDuringAttack && bossList[i].isShooting) continue;
 			if(bossList[i].moveStep == 0) {
 				bossList[i].moveStep = 20 + parseInt(Math.random() * 10);
 				bossList[i].moveX = parseInt(Math.random() * (bossList[i].speed * 2 + 1)) - bossList[i].speed;
@@ -880,16 +920,116 @@ $(document).ready(function() {
 
 	function createBossMissile() {
 		if(isBossStage) {
-			if(mainStageIdx == 1) {
+			for(var i=0;i<bossList.length;i++) {
+				doCreateBossMissile(bossList[i]);
+			}
+		}
+	}
 
-			} else if(mainStageIdx == 2) {
+	function doCreateBossMissile(bossObj) {
+		if(bossReadyForPlayer) return;
+		if(bossObj.isShooting) return;
+		if(movingBossStage) return;
+		bossObj.isShooting = true;
+		setTimeout(function(){bossObj.isShooting = false;}, bossObj.attackDuration);
 
-			} else if(mainStageIdx == 3) {
+		if(mainStageIdx == 0) {
+			if(bossObj.bossIdx == 0) {
+				var newBossMissile = {
+					stageIdx: mainStageIdx,
+					bossIdx: bossObj.bossIdx,
+					idx: 0,
+					x: bossObj.x - bossMissileSizes[mainStageIdx][bossObj.bossIdx].width,
+					y: bossObj.y + bossObj.height/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].height/2*3,
+					speed: bossMissileStats[mainStageIdx][bossObj.bossIdx].speed,
+					destX: charPosX + gameCharSizes[cursorIdx].width/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].width,
+					destY: charPosY + gameCharSizes[cursorIdx].height/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].height,
+					width: bossMissileSizes[mainStageIdx][bossObj.bossIdx].width,
+					height: bossMissileSizes[mainStageIdx][bossObj.bossIdx].height,
+					isHit: false,
+					frames: bossMissileFrames[mainStageIdx][bossObj.bossIdx],
+					step: 0,
+					maxStep: 0,
+					isBeam: false
+				};
 
-			} else if(mainStageIdx == 4) {
+				var xDiff = newBossMissile.destX - newBossMissile.x;
+				var yDiff = newBossMissile.destY - newBossMissile.y;
+				newBossMissile.speedX = newBossMissile.speed * (Math.cos(Math.atan(yDiff/xDiff)+0.1));
+				newBossMissile.speedY = newBossMissile.speed * (Math.sin(Math.atan(yDiff/xDiff)+0.1));
 
-			} else if(mainStageIdx == 5) {
+				bossMissileList.push(newBossMissile);
 
+				var newBossMissile2 = {
+					stageIdx: mainStageIdx,
+					bossIdx: bossObj.bossIdx,
+					idx: 0,
+					x: bossObj.x - bossMissileSizes[mainStageIdx][bossObj.bossIdx].width,
+					y: bossObj.y + bossObj.height/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].height/2,
+					speed: bossMissileStats[mainStageIdx][bossObj.bossIdx].speed,
+					destX: charPosX + gameCharSizes[cursorIdx].width/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].width,
+					destY: charPosY + gameCharSizes[cursorIdx].height/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].height,
+					width: bossMissileSizes[mainStageIdx][bossObj.bossIdx].width,
+					height: bossMissileSizes[mainStageIdx][bossObj.bossIdx].height,
+					isHit: false,
+					frames: bossMissileFrames[mainStageIdx][bossObj.bossIdx],
+					step: 0,
+					maxStep: 0,
+					isBeam: false
+				};
+
+				xDiff = newBossMissile2.destX - newBossMissile2.x;
+				yDiff = newBossMissile2.destY - newBossMissile2.y;
+				newBossMissile2.speedX = newBossMissile2.speed * (Math.cos(Math.atan(yDiff/xDiff)));
+				newBossMissile2.speedY = newBossMissile2.speed * (Math.sin(Math.atan(yDiff/xDiff)));
+
+				bossMissileList.push(newBossMissile2);
+
+				var newBossMissile3 = {
+					stageIdx: mainStageIdx,
+					bossIdx: bossObj.bossIdx,
+					idx: 0,
+					x: bossObj.x - bossMissileSizes[mainStageIdx][bossObj.bossIdx].width,
+					y: bossObj.y + bossObj.height/2 + bossMissileSizes[mainStageIdx][bossObj.bossIdx].height/2,
+					speed: bossMissileStats[mainStageIdx][bossObj.bossIdx].speed,
+					destX: charPosX + gameCharSizes[cursorIdx].width/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].width,
+					destY: charPosY + gameCharSizes[cursorIdx].height/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].height,
+					width: bossMissileSizes[mainStageIdx][bossObj.bossIdx].width,
+					height: bossMissileSizes[mainStageIdx][bossObj.bossIdx].height,
+					isHit: false,
+					frames: bossMissileFrames[mainStageIdx][bossObj.bossIdx],
+					step: 0,
+					maxStep: 0,
+					isBeam: false
+				};
+
+				xDiff = newBossMissile3.destX - newBossMissile3.x;
+				yDiff = newBossMissile3.destY - newBossMissile3.y;
+				newBossMissile3.speedX = newBossMissile3.speed * (Math.cos(Math.atan(yDiff/xDiff)-0.1));
+				newBossMissile3.speedY = newBossMissile3.speed * (Math.sin(Math.atan(yDiff/xDiff)-0.1));
+
+				bossMissileList.push(newBossMissile3);
+			} else if(bossObj.bossIdx == 1 || bossObj.bossIdx == 2) {
+				var newBossMissile = {
+					stageIdx: mainStageIdx,
+					bossIdx: bossObj.bossIdx,
+					idx: 0,
+					x: bossObj.x - bossMissileSizes[mainStageIdx][bossObj.bossIdx].width + 100,
+					y: bossObj.y + bossObj.height/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].height/2,
+					speed: bossMissileStats[mainStageIdx][bossObj.bossIdx].speed,
+					speedX: 0,
+					speedY: 0,
+					destX: charPosX + gameCharSizes[cursorIdx].width/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].width,
+					destY: charPosY + gameCharSizes[cursorIdx].height/2 - bossMissileSizes[mainStageIdx][bossObj.bossIdx].height,
+					width: bossMissileSizes[mainStageIdx][bossObj.bossIdx].width,
+					height: bossMissileSizes[mainStageIdx][bossObj.bossIdx].height,
+					isHit: false,
+					frames: bossMissileFrames[mainStageIdx][bossObj.bossIdx],
+					step: 0,
+					maxStep: 11,
+					isBeam: true
+				};
+				bossMissileList.push(newBossMissile);
 			}
 		}
 	}
@@ -953,6 +1093,18 @@ $(document).ready(function() {
 						console.log('endingBossStage true');
 						endingBossStage = true;
 						erasingBossStage = true;
+						for(i=bossMissileList.length-1;i>=0;i--) {
+							var newExplosion = {
+								imgIdx: 0,
+								x: bossMissileList[i].x + bossMissileList[i].width - explosionSizes[0].width/2,
+								y: bossMissileList[i].y + bossMissileList[i].height - explosionSizes[0].height/2,
+								width: explosionSizes[0].width,
+								height: explosionSizes[0].height,
+								isEnd: false
+							}
+							explosionList.push(newExplosion);
+							bossMissileList[i].isHit = true;
+						}
 						bossKill = 0;
 					}
 				}
@@ -1043,6 +1195,9 @@ $(document).ready(function() {
 						canHit: bossStats[mainStageIdx][i].canHit,
 						moveStep: 0,
 						curMoveStep: 0,
+						isShooting: false,
+						attackDuration: bossStats[mainStageIdx][i].attackDuration,
+						isStopDuringAttack: bossStats[mainStageIdx][i].isStopDuringAttack
 					}
 
 					if(i==0)
@@ -1084,21 +1239,25 @@ $(document).ready(function() {
 		}
 	}
 
-	function checkPlayerCollision(monsterObj) {
+	function checkPlayerCollision(targetObj, isMissile) {
 		var charCoor = {};
 		charCoor.left = charPosX;
 		charCoor.right = charPosX + gameCharSizes[cursorIdx].width;
 		charCoor.top = charPosY;
 		charCoor.bottom = charPosY + gameCharSizes[cursorIdx].height;
 
-		var monsterCoor = {};
-		monsterCoor.left = monsterObj.x;
-		monsterCoor.right = monsterObj.x + monsterObj.width;
-		monsterCoor.top = monsterObj.y;
-		monsterCoor.bottom = monsterObj.y + monsterObj.height;
+		var targetCoor = {};
+		targetCoor.left = targetObj.x;
+		targetCoor.right = targetObj.x + targetObj.width;
+		targetCoor.top = targetObj.y;
+		targetCoor.bottom = targetObj.y + targetObj.height;
 
-		if(checkOverrapSquares(charCoor, monsterCoor)) {
-			return {isCollide: true, x: monsterObj.x + monsterObj.width/2, y: monsterObj.y + monsterObj.height/2};
+		if(checkOverrapSquares(charCoor, targetCoor)) {
+			if(isMissile) {
+				return {isCollide: true, x: charPosX + gameCharSizes[cursorIdx].width/2, y: charPosY + gameCharSizes[cursorIdx].height/2};
+			} else {
+				return {isCollide: true, x: targetObj.x + targetObj.width/2, y: targetObj.y + targetObj.height/2};
+			}
 		}
 
 		return {isCollide : false, x:0, y:0};
@@ -1106,7 +1265,7 @@ $(document).ready(function() {
 
 	function doPlayerCollision() {
 		for(var i=monsterList.length-1;i>=0;i--) {
-			var checkObj = checkPlayerCollision(monsterList[i]);
+			var checkObj = checkPlayerCollision(monsterList[i], false);
 			if(checkObj.isCollide) {
 				var newExplosion = {
 					imgIdx: 0,
@@ -1123,6 +1282,27 @@ $(document).ready(function() {
 					isPlaying = false;
 				}
 				monsterList[i].isDead = true;
+			}
+		}
+
+		for(var i=bossMissileList.length-1;i>=0;i--) {
+			var checkObj = checkPlayerCollision(bossMissileList[i], true);
+			if(checkObj.isCollide) {
+				var newExplosion = {
+					imgIdx: 0,
+					x: charPosX - explosionSizes[0].width/2,
+					y: charPosY - explosionSizes[0].height/2,
+					width: explosionSizes[0].width,
+					height: explosionSizes[0].height,
+					isEnd: false
+				}
+				explosionList.push(newExplosion);
+				life--;
+				if(life<=0) {
+					life = 0;
+					isPlaying = false;
+				}
+				bossMissileList[i].isHit = true;
 			}
 		}
 	}
@@ -1159,6 +1339,17 @@ $(document).ready(function() {
 				bossKill++;
 			}
 		}
+
+		for(var i=bossMissileList.length-1;i>=0;i--) {
+			if(bossMissileList[i].isHit
+				|| bossMissileList[i].x < 0
+				|| bossMissileList[i].y <0
+				|| bossMissileList[i].x > screenWidth
+				|| bossMissileList[i].y > screenHeight
+				|| (bossMissileList[i].maxStep > 0 && bossMissileList[i].step == bossMissileList[i].maxStep)) {
+				bossMissileList.splice(i, 1);
+			}
+		}
 	}
 
 	function initGame() {
@@ -1192,6 +1383,8 @@ $(document).ready(function() {
 		explosionList = [];
 		monsterList = [];
 		missileList = [];
+		bossList = [];
+		bossMissileList = [];
 
 		$('.map-guide > .map-dot').each(function(idx, item) {
 			if(idx == 0) {
