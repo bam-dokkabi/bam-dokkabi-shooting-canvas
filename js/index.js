@@ -1489,7 +1489,7 @@ $(document).ready(function() {
 	$(document).keydown(function(e) {
 		var keyCode = e.which;
 		
-		if(keyCode == 37 || keyCode == 38 || keyCode == 39 || keyCode == 40) {
+		if(keyCode == 37 || keyCode == 38 || keyCode == 39 || keyCode == 40 || keyCode == 32) {
 			event.preventDefault();
 			event.stopPropagation();
 		}
