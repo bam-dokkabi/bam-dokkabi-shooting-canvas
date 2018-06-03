@@ -7,7 +7,7 @@ $(document).ready(function() {
 	var context = canvas.getContext("2d");
 
 	var screenWidth = 914, screenHeight = 490;
-	var screenTopBorder = 20;
+	var screenTopBorder = 30;
 	var screenBottomBorder = 30;
 	var scene = 1;
 	var screenOpacity = 0;
@@ -52,8 +52,20 @@ $(document).ready(function() {
 	];
 
 	var bossSizes = [
-		[{width: 204, height: 134}, {width: 34, height: 16},{width: 34, height: 16}]
+		[{width: 204, height: 134}, {width: 95, height: 39},{width: 95, height: 39}]
 	];
+
+	var bossMissileSizes = [
+		[{width: 34, height: 16}]
+	];
+
+	var bossMissileStats = [
+		[],
+		[],
+		[],
+		[],
+		[]
+	]
 
 	var monsterStats = [
 	//1
@@ -78,9 +90,9 @@ $(document).ready(function() {
 
 	var bossStats = [
 		[
-			{life: 10, speed: 1, moveHorizontal: true, isAttack: true}, 
-			{life: 5, speed: 1, moveHorizontal: false},
-			{life: 5, speed: 1, moveHorizontal: false}
+			{life: 10, speed: 1, y: screenHeight/2, moveHorizontal: true, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}, 
+			{life: 0, speed: 1, y: screenHeight/4, moveHorizontal: false, canHit: false, moveBorder: [0, screenWidth, screenTopBorder, screenHeight/2 - bossSizes[0][1].height]},
+			{life: 0, speed: 1, y: screenHeight*3/4, moveHorizontal: false, canHit: false, moveBorder: [0, screenWidth, screenHeight/2, screenHeight - screenBottomBorder - bossSizes[0][1].height]}
 		]
 	];
 
@@ -103,7 +115,20 @@ $(document).ready(function() {
 	];
 	var mainStageNum = 4;
 	var subStageNum = [5,5,5,5];
-	var numOfBosses = [1,3,3,3,3];
+	var numOfBosses = [3,0,0,0];
+	var bossFrames = [
+		[2,1,1],
+		[1,1,1],
+		[1,1,1],
+		[1,1,1]
+	];
+
+	var bossMissileFrames = [
+		[1,1,1],
+		[1,1,1],
+		[1,1,1],
+		[1,1,1]
+	]
 
 	var stageMonsters = [
 		//main 1
@@ -171,17 +196,17 @@ $(document).ready(function() {
 	var bossDestinationDistance;
 	var bossDestinationPer;
 	var movingBossStage = false;
-	var bossMoveStep = 0;
-	var curBossMoveStep = 0;
 	var bossMoveX;
 	var bossMoveY;
 	var bossBarY;
 	var bossBarHeight = 15;
+	var bossBarMarginLeft = 60;
 	var bossLife;
 	var endingBossStage = false;
 	var erasingBossStage = false;
 	var bossKill = 0;
-	
+	var heartXStart = 60;
+	var heartXDiff = 20;
 
 	var chooseChar1 = new Image();
 	var chooseChar2 = new Image();
@@ -205,14 +230,12 @@ $(document).ready(function() {
 	var monsterImg3 = new Image();
 	var monsterImg4 = new Image();
 	var monsterImg5 = new Image();
-	var bossImg1_1 = new Image();
-	var bossImg1_2 = new Image();
-	var bossImg1Small = new Image();
 	var skillBarFrameImg = new Image();
 	var skillBarImg = new Image();
 	var skillMaxImg = new Image();
 	var gameOverImg = new Image();
 	var nextStageImg = new Image();
+	var heartImg = new Image();
 
 	chooseChar1.src = "images/c01.png";
 	chooseChar2.src = "images/c02.png";
@@ -246,11 +269,42 @@ $(document).ready(function() {
 	monsterImg5.src = "images/enemy/e05.png";
 	var monsterImgs = [monsterImg1,monsterImg2,monsterImg3,monsterImg4,monsterImg5];
 
-	bossImg1_1.src = "images/enemy/b01_1.png";
+	var bossImgs = [];
+	var bossMissileImgs = [];
+
+	for(var i=0;i<mainStageName.length;i++) {
+		var newBossImgArr = [];
+		var newBossMissileArr = [];
+		bossImgs.push(newBossImgArr);
+		bossMissileImgs.push(newBossMissileArr);
+	}
+
+	for(var i=0;i<mainStageName.length;i++) {
+		for(var j=0;j<numOfBosses[i];j++) {
+			bossImgs[i].push(new Array());
+			bossMissileImgs[i].push(new Array());
+			for(var k=0;k<bossFrames[i][j];k++) {
+				var newImg = new Image();
+				var imgStr = 'images/enemy/b' + i + '_' + j + '_' + k + '.png';
+				newImg.src = imgStr;
+				bossImgs[i][j].push(newImg);
+			}
+
+			for(var k=0;k<bossMissileFrames;k++) {
+				var newImg = new Image();
+				var imgStr = 'images/enemy/ba' + i + '_' + j + '_' + k + '.png';
+				newImg.src = imgStr;
+				bossMissileImgs[i][j].push(newImg);
+			}
+		}
+	}
+
+
+	/*bossImg1_1.src = "images/enemy/b01_1.png";
 	bossImg1_2.src = "images/enemy/b01_2.png";
 	var bossImgs1 = [bossImg1_1, bossImg1_2];
 
-	bossImg1Small.src = "images/enemy/b01a.png";
+	bossImg1Small.src = "images/enemy/b01a.png";*/
 
 	var explosionImgs = [];
 	for(var i=0;i<48;i++) {
@@ -269,7 +323,7 @@ $(document).ready(function() {
 	skillMaxImg.src = "images/max.png";
 	gameOverImg.src = "images/gameover.png";
 	nextStageImg.src = "images/next.png";
-
+	heartImg.src = "images/heart.png";
 
 	var chooseCharPosX = [250, 350, 450, 550];
 	var chooseCharPosY = 180;
@@ -288,7 +342,6 @@ $(document).ready(function() {
 	var drawingIntervalId = setInterval(drawScreen, 20);
 
 	var back1X = 0, back2X = -2736, back3X;
-	var bossImgIdx = 0;
 
 	function drawScreen() {
 		if(scene==1) {
@@ -378,7 +431,7 @@ $(document).ready(function() {
 			changeBossImg();
 			moveBoss();
 			for(var i=0;i<bossList.length;i++) {
-				context.drawImage(bossImgs1[bossImgIdx], bossList[i].x, bossList[i].y);	
+				context.drawImage(bossImgs[mainStageIdx][bossList[i].bossIdx][bossList[i].idx], bossList[i].x, bossList[i].y);	
 			}
 			//context.drawImage(bossImgs1[bossImgIdx], back3X+2736-bossSizes[mainStageIdx][0].width, screenHeight/2 - bossSizes[mainStageIdx][0].height/2);
 		}
@@ -443,12 +496,15 @@ $(document).ready(function() {
 		context.textBaseline = "top";
 		context.fillText("LIFE", 12, 10);
 
-		var heartString = "";
+		for(var i=0;i<life;i++) {
+			context.drawImage(heartImg, heartXStart + heartXDiff*i, 12);
+		}
+		/*var heartString = "";
 		for(var i=0;i<life;i++) {
 			heartString += "❤️";
 		}
 		context.font = "18px SandollGothicM";
-		context.fillText(heartString, 60, 10);
+		context.fillText(heartString, 60, 10);*/
 		context.font = "20px SandollGothicM";
 		context.fillText("SKILL", 165, 10);
 		context.fillText("TIME", 565, 10);
@@ -459,7 +515,7 @@ $(document).ready(function() {
 		context.fillStyle = "white";
 		context.fillText("STAGE", 696, 10);
 		context.fillText(stageNames[mainStageIdx][subStageIdx],762, 10);
-		context.fillText(getKillText(), 762, 30);
+		context.fillText(getKillText(isBossStage), 762, 30);
 
 		context.drawImage(skillBarFrameImg, 225, 12);
 		if(skillBar > 0)
@@ -527,10 +583,14 @@ $(document).ready(function() {
 
 	function drawBossLifeBar(drawInBar) {
 		context.fillStyle = "gray";
-		context.fillRect(0, bossBarY, screenWidth, bossBarHeight);
+		context.fillRect(bossBarMarginLeft, bossBarY, screenWidth-bossBarMarginLeft, bossBarHeight);
+		context.fillStyle = "white";
+		context.font = "16px SandollGothicM";
+		context.textAlign = "left";
+		context.fillText("BOSS", 8, bossBarY-1);
 		if(drawInBar) {
 			context.fillStyle = "red";
-			context.fillRect(2, bossBarY+2, (screenWidth-4) * bossList[0].life / bossStats[mainStageIdx][0].life , bossBarHeight-4);
+			context.fillRect(bossBarMarginLeft+2, bossBarY+2, (screenWidth-bossBarMarginLeft-4) * bossList[0].life / bossStats[mainStageIdx][0].life , bossBarHeight-4);
 		}
 	}
 
@@ -547,8 +607,13 @@ $(document).ready(function() {
 		return timeMin + ":" + timeSecText;
 	}
 
-	function getKillText() {
-		return "KILL : " + monsterKills + "/" + monsterKillMax;
+	function getKillText(isBossStage) {
+		if(isBossStage) {
+			return "KILL : - /" + monsterKillMax;
+		}
+		else {
+			return "KILL : " + monsterKills + "/" + monsterKillMax;
+		}
 	}
 
 	function moveBackground() {
@@ -563,7 +628,9 @@ $(document).ready(function() {
 				if(back1X < -2736 * 2 ) back1X = 2736;
 				if(back2X < -2736 * 2) back2X = 2736;
 				if(movingBossStage) {
-					bossList[0].x = back3X + 2736 - bossList[0].width;
+					for(var i=0;i<bossList.length;i++) {
+						bossList[i].x = back3X + 2736 - bossList[i].width;	
+					}
 				}
 
 				if(back3X == bossDestination) {
@@ -606,9 +673,11 @@ $(document).ready(function() {
 		if(sceneCount%10!=0) {
 			return;
 		}
-		bossImgIdx++;
-		if(bossImgIdx == bossImgs1.length) {
-			bossImgIdx = 0;
+		for(var i=0;i<bossList.length;i++) {
+			bossList[i].idx++;
+			if(bossList[i].idx >= bossList[i].frames) {
+				bossList[i].idx = 0;
+			}
 		}
 	}
 
@@ -638,25 +707,30 @@ $(document).ready(function() {
 	function moveBoss() {
 		if(movingBossStage) return;
 		for(var i=0;i<bossList.length;i++) {
-			if(bossMoveStep == 0) {
-				bossMoveStep = 20 + parseInt(Math.random() * 10);
-				bossMoveX = parseInt(Math.random() * (bossList[i].speed * 2 + 1)) - bossList[i].speed;
-				bossMoveY = parseInt(Math.random() * (bossList[i].speed * 2 + 1)) - bossList[i].speed;
+			if(bossList[i].moveStep == 0) {
+				bossList[i].moveStep = 20 + parseInt(Math.random() * 10);
+				bossList[i].moveX = parseInt(Math.random() * (bossList[i].speed * 2 + 1)) - bossList[i].speed;
+				bossList[i].moveY = parseInt(Math.random() * (bossList[i].speed * 2 + 1)) - bossList[i].speed;
 			}
 
-			if(bossMoveStep == curBossMoveStep) {
-				bossMoveStep = 0;
-				curBossMoveStep = 0;
+			if(bossList[i].moveStep == bossList[i].curMoveStep) {
+				bossList[i].moveStep = 0;
+				bossList[i].curMoveStep = 0;
 			}
 
-			bossList[i].x += bossMoveX;
-			bossList[i].y += bossMoveY;
+			if(bossList[i].moveHorizontal) {
+				bossList[i].x += bossList[i].moveX;
+			}
+			bossList[i].y += bossList[i].moveY;
 
 			if(bossList[i].x > screenWidth - bossList[i].width) bossList[i].x = screenWidth - bossList[i].width;
-			if(bossList[i].x < screenWidth - 400) bossList[i].x = screenWidth - 400;
 			if(bossList[i].y < screenTopBorder) bossList[i].y = screenTopBorder;
 			if(bossList[i].y > screenHeight - screenBottomBorder - bossList[i].height) bossList[i].y = screenHeight - bossList[i].height - screenBottomBorder;
-			curBossMoveStep++;
+			if(bossList[i].x < bossList[i].moveBorder[0]) bossList[i].x = bossList[i].moveBorder[0];
+			if(bossList[i].x > bossList[i].moveBorder[1]) bossList[i].x = bossList[i].moveBorder[1];
+			if(bossList[i].y < bossList[i].moveBorder[2]) bossList[i].y = bossList[i].moveBorder[2];
+			if(bossList[i].y > bossList[i].moveBorder[3]) bossList[i].y = bossList[i].moveBorder[3];
+			bossList[i].curMoveStep++;
 		}
 	}
 
@@ -807,7 +881,7 @@ $(document).ready(function() {
 	function createBossMissile() {
 		if(isBossStage) {
 			if(mainStageIdx == 1) {
-				
+
 			} else if(mainStageIdx == 2) {
 
 			} else if(mainStageIdx == 3) {
@@ -848,6 +922,8 @@ $(document).ready(function() {
 		var missileCoor = {};
 		var monsterCoor = {};
 
+		if(isBoss && !targetObj.canHit) return;
+
 		topTemp = missileObj.y - missileObj.width * Math.sin(missileObj.angle * Math.PI/180);
 		bottomTemp = missileObj.y + missileObj.height * Math.cos(missileObj.angle * Math.PI/180);
 		leftTemp = missileObj.x + missileObj.width * (1 - Math.cos(missileObj.angle * Math.PI/180));
@@ -872,7 +948,7 @@ $(document).ready(function() {
 				if(isBoss) {
 					bossKill++;
 
-					if(bossKill == numOfBosses[mainStageIdx]) {
+					if(bossKill > 0) {
 						goNextStage();
 						console.log('endingBossStage true');
 						endingBossStage = true;
@@ -948,20 +1024,34 @@ $(document).ready(function() {
 				bossDestinationDistance = back3X - bossDestination;
 				bossDestinationPer = bossDestinationDistance / 50;
 
-				var newBoss = {
-					x: back3X+2736-bossSizes[mainStageIdx][0].width,
-					y: screenHeight/2 - bossSizes[mainStageIdx][0].height/2,
-					width: bossSizes[mainStageIdx][0].width,
-					height: bossSizes[mainStageIdx][0].height,
-					life: bossStats[mainStageIdx][0].life,
-					speed: bossStats[mainStageIdx][0].speed,
-					moveHorizontal : bossStats[mainStageIdx][0].moveHorizontal,
-					isDead: false
+				for(var i=0;i<numOfBosses[mainStageIdx];i++) {
+					var newBoss = {
+						bossIdx: i,
+						idx: 0,
+						frames: bossFrames[mainStageIdx][i],
+						x: back3X+2736-bossSizes[mainStageIdx][i].width,
+						y: bossStats[mainStageIdx][i].y - bossSizes[mainStageIdx][i].height,
+						moveX: 0,
+						moveY: 0,
+						moveBorder: bossStats[mainStageIdx][i].moveBorder,
+						width: bossSizes[mainStageIdx][i].width,
+						height: bossSizes[mainStageIdx][i].height,
+						life: bossStats[mainStageIdx][i].life,
+						speed: bossStats[mainStageIdx][i].speed,
+						moveHorizontal : bossStats[mainStageIdx][i].moveHorizontal,
+						isDead: false,
+						canHit: bossStats[mainStageIdx][i].canHit,
+						moveStep: 0,
+						curMoveStep: 0,
+					}
+
+					if(i==0)
+						bossLife = newBoss.life;
+
+					bossList.push(newBoss);
 				}
 
-				bossLife = newBoss.life;
-
-				bossList.push(newBoss);
+				
 			}
 		} else {
 			if(mainStageIdx < mainStageNum - 1) {
@@ -1095,6 +1185,9 @@ $(document).ready(function() {
 		isBossStage = false;
 		back1X = 0;
 		back2X = -2736;
+		endingBossStage = false;
+		erasingBossStage = false;
+		bossKill = 0;
 
 		explosionList = [];
 		monsterList = [];
@@ -1126,8 +1219,11 @@ $(document).ready(function() {
 
 	$(document).keydown(function(e) {
 		var keyCode = e.which;
-		event.preventDefault();
-		event.stopPropagation();
+		
+		if(keyCode == 37 || keyCode == 38 || keyCode == 39 || keyCode == 40) {
+			event.preventDefault();
+			event.stopPropagation();
+		}
 
 		if(keyCode == 37) $('.game-btn-arrow').css('left', '415px');
 		if(keyCode == 38) $('.game-btn-arrow').css('top', '703px');
