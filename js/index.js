@@ -163,7 +163,7 @@ $(document).ready(function() {
 		[0,0,0],
 		[0],
 		[0]
-	]
+	];
 
 	var stageMonsters = [
 		//main 1
@@ -202,6 +202,7 @@ $(document).ready(function() {
 
 	var charMovingSpeed = 5;
 	var missileMovingSpeed = 5;
+	var monsterBaseSpeed = 5;
 
 	var LEFTMOVE = false;
 	var UPMOVE = false;
@@ -244,6 +245,7 @@ $(document).ready(function() {
 	var heartXDiff = 20;
 	var bossReadyForPlayer = false;
 	var laserBeamY1, laserBeamY2;
+	var beamReadyOpacity = 0;
 
 
 	var chooseChar1 = new Image();
@@ -269,6 +271,7 @@ $(document).ready(function() {
 	var gameOverImg = new Image();
 	var nextStageImg = new Image();
 	var heartImg = new Image();
+	var beamReadyImg = new Image();
 
 	chooseChar1.src = "images/c01.png";
 	chooseChar2.src = "images/c02.png";
@@ -357,6 +360,7 @@ $(document).ready(function() {
 	gameOverImg.src = "images/gameover.png";
 	nextStageImg.src = "images/next.png";
 	heartImg.src = "images/heart.png";
+	beamReadyImg.src = "images/enemy/ea5.png"
 
 	var chooseCharPosX = [250, 350, 450, 550];
 	var chooseCharPosY = 180;
@@ -471,8 +475,9 @@ $(document).ready(function() {
 				var y = bossMissileList[i].y;
 				var height = bossMissileList[i].height;
 				if(bossMissileList[i].isBeam) {
-					if(bossMissileList[i].maxStep - bossMissileList[i].step >= 20) {
-						width *= bossMissileList[i].step / (bossMissileList[i].maxStep - 20);
+					
+					if(bossMissileList[i].step >= 30 && bossMissileList[i].step < 70) {
+						width *= bossMissileList[i].step - 30 / 40;
 					}
 					x += bossMissileList[i].width - width;
 					if(mainStageIdx == 0 && bossMissileList[i].bossIdx == 1) {
@@ -480,8 +485,31 @@ $(document).ready(function() {
 					} else if(mainStageIdx == 0 && bossMissileList[i].bossIdx ==2) {
 						y = laserBeamY2;
 					}
-					if(bossMissileList[i].maxStep - bossMissileList[i].step < 20) {
-						height *= (bossMissileList[i].maxStep - bossMissileList[i].step) / 20;
+					if(bossMissileList[i].step < 30) {
+						console.log('draw ready beam');
+						context.save();
+						var step = bossMissileList[i].step;
+
+						if((step >= 0 && step < 2) 
+							|| (step>=4 && step<6) 
+							|| (step>=8 && step<10) 
+							|| (step>=20 && step<22)
+							|| (step>=24 && step<26)
+							|| (step>=28 && step<30)) {
+							beamReadyOpacity = 0.3;
+						} else {
+							beamReadyOpacity = 1;
+						}
+
+						if(beamReadyOpacity < 0) beamReadyOpacity = 0;
+						if(beamReadyOpacity > 1) beamReadyOpacity = 1;
+						context.globalAlpha = beamReadyOpacity;
+						context.drawImage(beamReadyImg, bossMissileList[i].bossX-40, y);
+						context.restore();
+						continue;
+					}
+					if(bossMissileList[i].maxStep - bossMissileList[i].step < 30) {
+						height *= (bossMissileList[i].maxStep - bossMissileList[i].step) / 30;
 					}
 					
 				}
@@ -782,7 +810,7 @@ $(document).ready(function() {
 
 	function moveMonster() {
 		for(var i=0;i<monsterList.length;i++) {
-			monsterList[i].x -= monsterList[i].speed;
+			monsterList[i].x -= monsterList[i].speed * monsterBaseSpeed;
 
 			if(sceneCount%3 !=0) continue;
 
@@ -1080,8 +1108,9 @@ $(document).ready(function() {
 					isHit: false,
 					frames: bossMissileFrames[mainStageIdx][bossObj.bossIdx],
 					step: 0,
-					maxStep: 50,
-					isBeam: true
+					maxStep: 100,
+					isBeam: true,
+					bossX : bossObj.x
 				};
 
 				if(bossObj.bossIdx == 1) laserBeamY1 = newBossMissile.y + bossObj.height/2;
@@ -1320,11 +1349,12 @@ $(document).ready(function() {
 		targetCoor.bottom = targetObj.y + targetObj.height;
 
 		if(targetObj.isBeam) {
-			if(targetObj.maxStep - targetObj.step >= 20) {
-				targetCoor.left = (targetObj.x + targetObj.width) - (targetObj.width * targetObj.step / (targetObj.maxStep - 20));
+			if(targetObj.step >= 0 && targetObj.step < 30) return {isCollide: false, x:0, y:0};
+			if(targetObj.step >= 30 && targetObj.step < 70) {
+				targetCoor.left = (targetObj.x + targetObj.width) - (targetObj.width * targetObj.step - 30 / 40);
 			}
-			if(targetObj.maxStep - targetObj.step < 20) {
-				targetCoor.bottom = (targetObj.y + targetObj.height * (targetObj.maxStep - targetObj.step) / 20); 
+			if(targetObj.maxStep - targetObj.step < 30) {
+				targetCoor.bottom = (targetObj.y + targetObj.height * (targetObj.maxStep - targetObj.step) / 30); 
 			}
 		}
 
