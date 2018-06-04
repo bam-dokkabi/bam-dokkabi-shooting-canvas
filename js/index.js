@@ -55,9 +55,9 @@ $(document).ready(function() {
 		{width: 56, height: 55},
 		{width: 33, height: 55},
 		{width: 60, height: 61},
-		{width: 41, height: 61},
-		//10
 		{width: 81, height: 82},
+		//10
+		{width: 73, height: 80},
 		{width: 82, height: 67},
 		{width: 75, height: 63},
 		{width: 78, height: 57},
@@ -469,60 +469,74 @@ $(document).ready(function() {
 			changeBossImg();
 			changeBossMissileImg();
 			moveBoss();
+			for(var i=0;i<bossList.length;i++) {
+				context.drawImage(bossImgs[mainStageIdx][bossList[i].bossIdx][bossList[i].idx], bossList[i].x, bossList[i].y);	
+			}
 			for(var i=0;i<bossMissileList.length;i++) {
 				var width = bossMissileList[i].width;
 				var x = bossMissileList[i].x;
 				var y = bossMissileList[i].y;
+				var beamReadyY = y;
 				var height = bossMissileList[i].height;
 				if(bossMissileList[i].isBeam) {
 					
-					if(bossMissileList[i].step >= 30 && bossMissileList[i].step < 70) {
-						width *= bossMissileList[i].step - 30 / 40;
+					if(bossMissileList[i].step >= 30 && bossMissileList[i].step < 50) {
+						width *= (bossMissileList[i].step - 30) / 20;
 					}
 					x += bossMissileList[i].width - width;
 					if(mainStageIdx == 0 && bossMissileList[i].bossIdx == 1) {
-						y = laserBeamY1;
+						y = beamReadyY = laserBeamY1;
 					} else if(mainStageIdx == 0 && bossMissileList[i].bossIdx ==2) {
-						y = laserBeamY2;
-					}
-					if(bossMissileList[i].step < 30) {
-						console.log('draw ready beam');
-						context.save();
-						var step = bossMissileList[i].step;
-
-						if((step >= 0 && step < 2) 
-							|| (step>=4 && step<6) 
-							|| (step>=8 && step<10) 
-							|| (step>=20 && step<22)
-							|| (step>=24 && step<26)
-							|| (step>=28 && step<30)) {
-							beamReadyOpacity = 0.3;
-						} else {
-							beamReadyOpacity = 1;
-						}
-
-						if(beamReadyOpacity < 0) beamReadyOpacity = 0;
-						if(beamReadyOpacity > 1) beamReadyOpacity = 1;
-						context.globalAlpha = beamReadyOpacity;
-						context.drawImage(beamReadyImg, bossMissileList[i].bossX-40, y);
-						context.restore();
-						continue;
+						y = beamReadyY = laserBeamY2;
 					}
 					if(bossMissileList[i].maxStep - bossMissileList[i].step < 30) {
 						height *= (bossMissileList[i].maxStep - bossMissileList[i].step) / 30;
+						y += (bossMissileList[i].height * (bossMissileList[i].step - 50)/30.0)/2.0;
 					}
+					var step = bossMissileList[i].step;
+
+					if((step >= 0 && step < 2) 
+						|| (step>=4 && step<6) 
+						|| (step>=8 && step<10) 
+						|| (step>=20 && step<22)
+						|| (step>=24 && step<26)
+						|| (step>=28 && step<30)) {
+						beamReadyOpacity = 0.3;
+					} //else if(step>=50 && step<60) {
+						/*beamReadyOpacity -= 0.1;
+					} else if(step>=60) {
+						beamReadyOpacity = 0;
+					}*/
+					 else {
+						beamReadyOpacity = 1;
+					}
+
+					if(beamReadyOpacity < 0) beamReadyOpacity = 0;
+					if(beamReadyOpacity > 1) beamReadyOpacity = 1;
+					context.save();
+					context.globalAlpha = beamReadyOpacity;
+					context.drawImage(beamReadyImg, bossMissileList[i].bossX-58, beamReadyY-4);
+					context.restore();
+					if(bossMissileList[i].step >= 30) {
+						context.drawImage(bossMissileImgs[mainStageIdx][bossMissileList[i].bossIdx][bossMissileList[i].idx],
+							x,
+							y,
+							width,
+							height);
+					}
+						
+					continue;
 					
+				} else {
+					context.drawImage(bossMissileImgs[mainStageIdx][bossMissileList[i].bossIdx][bossMissileList[i].idx],
+						x,
+						y,
+						width,
+						height);
 				}
 				
-				context.drawImage(bossMissileImgs[mainStageIdx][bossMissileList[i].bossIdx][bossMissileList[i].idx],
-					x,
-					y,
-					width,
-					height);
 			}
-			for(var i=0;i<bossList.length;i++) {
-				context.drawImage(bossImgs[mainStageIdx][bossList[i].bossIdx][bossList[i].idx], bossList[i].x, bossList[i].y);	
-			}
+			
 			//context.drawImage(bossImgs1[bossImgIdx], back3X+2736-bossSizes[mainStageIdx][0].width, screenHeight/2 - bossSizes[mainStageIdx][0].height/2);
 		}
 
@@ -1108,7 +1122,7 @@ $(document).ready(function() {
 					isHit: false,
 					frames: bossMissileFrames[mainStageIdx][bossObj.bossIdx],
 					step: 0,
-					maxStep: 100,
+					maxStep: 80,
 					isBeam: true,
 					bossX : bossObj.x
 				};
@@ -1348,10 +1362,10 @@ $(document).ready(function() {
 		targetCoor.top = targetObj.y;
 		targetCoor.bottom = targetObj.y + targetObj.height;
 
-		if(targetObj.isBeam) {
+		if(targetObj.isBeam && isMissile) {
 			if(targetObj.step >= 0 && targetObj.step < 30) return {isCollide: false, x:0, y:0};
-			if(targetObj.step >= 30 && targetObj.step < 70) {
-				targetCoor.left = (targetObj.x + targetObj.width) - (targetObj.width * targetObj.step - 30 / 40);
+			if(targetObj.step >= 30 && targetObj.step < 50) {
+				targetCoor.left = (targetObj.x + targetObj.width) - (targetObj.width * (targetObj.step - 30) / 20);
 			}
 			if(targetObj.maxStep - targetObj.step < 30) {
 				targetCoor.bottom = (targetObj.y + targetObj.height * (targetObj.maxStep - targetObj.step) / 30); 
@@ -1360,6 +1374,7 @@ $(document).ready(function() {
 
 		if(checkOverrapSquares(charCoor, targetCoor)) {
 			if(isMissile) {
+				console.log('collide');
 				return {isCollide: true, x: charPosX + gameCharSizes[cursorIdx].width/2, y: charPosY + gameCharSizes[cursorIdx].height/2};
 			} else {
 				return {isCollide: true, x: targetObj.x + targetObj.width/2, y: targetObj.y + targetObj.height/2};
