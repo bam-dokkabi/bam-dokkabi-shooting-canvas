@@ -114,7 +114,7 @@ $(document).ready(function() {
 
 	var bossStats = [
 		[
-			{life: 10, speed: 1, attackDuration: 4000, y: screenHeight/2, moveHorizontal: true, isStopDuringAttack: false, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}, 
+			{life: 30, speed: 1, attackDuration: 4000, y: screenHeight/2, moveHorizontal: true, isStopDuringAttack: false, canHit: true, moveBorder: [screenWidth - 500, screenWidth - bossSizes[0][0].width, screenTopBorder, screenHeight - screenBottomBorder - bossSizes[0][0].height]}, 
 			{life: 0, speed: 1, attackDuration: 8000, y: screenHeight/4, moveHorizontal: false, isStopDuringAttack: true, canHit: false, moveBorder: [0, screenWidth, screenTopBorder, screenHeight/2 - bossSizes[0][1].height]},
 			{life: 0, speed: 1, attackDuration: 10000, y: screenHeight*3/4, moveHorizontal: false, isStopDuringAttack: true, canHit: false, moveBorder: [0, screenWidth, screenHeight/2, screenHeight - screenBottomBorder - bossSizes[0][1].height]}
 		],
@@ -218,7 +218,7 @@ $(document).ready(function() {
 	var timeMin = 3;
 	var timeSec = 0;
 	var monsterKills = 0;
-	var monsterKillMax = 1;
+	var monsterKillMax = 2;
 	var isPlaying = true;
 	var showGameOver = false;
 	var completeGameOver = false;
@@ -253,6 +253,7 @@ $(document).ready(function() {
 	var fireX, fireY;
 	var isReviving = false;
 	var deathFireStep = 0;
+	var isShield = false;
 
 
 	var chooseChar1 = new Image();
@@ -279,6 +280,9 @@ $(document).ready(function() {
 	var nextStageImg = new Image();
 	var heartImg = new Image();
 	var beamReadyImg = new Image();
+
+	var shieldImg = new Image();
+	shieldImg.src = "images/shield.png";
 
 	chooseChar1.src = "images/s01.png";
 	chooseChar2.src = "images/s02.png";
@@ -583,6 +587,12 @@ $(document).ready(function() {
 			context.restore();
 		}
 
+		if(isShield) {
+			var diameterBase = gameCharSizes[cursorIdx].width > gameCharSizes[cursorIdx].height ? gameCharSizes[cursorIdx].width : gameCharSizes[cursorIdx].height;
+			var diameter = Math.sqrt(2*diameterBase*diameterBase);
+			context.drawImage(shieldImg, charPosX+gameCharSizes[cursorIdx].width/2-diameter/2, charPosY+gameCharSizes[cursorIdx].height/2-diameter/2, diameter, diameter);
+		}
+
 		for(var i=0;i<monsterList.length;i++) {
 			if(monsterList[i].isOpacityChange) {
 				if(sceneCount % 5 == 0) {
@@ -626,7 +636,7 @@ $(document).ready(function() {
 				context.drawImage(explosionImgs[explosionList[i].imgIdx], explosionList[i].x, explosionList[i].y, explosionList[i].width, explosionList[i].height);
 		}
 
-		if(usingSkill) {
+		if(usingSkill && getSkillMessage() != undefined) {
 			context.font = "18px DoHyeon";
 			context.fillStyle = "white";
 			context.textAlign = "center";
@@ -660,7 +670,7 @@ $(document).ready(function() {
 		context.fillText("STAGE", 696, 10);
 		context.fillText(stageNames[mainStageIdx][subStageIdx],762, 10);
 		context.fillText(getKillText(isBossStage), 762, 30);
-
+		
 		context.drawImage(skillBarFrameImg, 225, 12);
 		if(skillBar > 0)
 			context.drawImage(skillBarImg, 228, 14, skillBar*240/100,12);
@@ -728,7 +738,13 @@ $(document).ready(function() {
 
 	function getSkillMessage() {
 		if(cursorIdx == 0) {
-			return "3초간 무적!";
+			return "10초간 보호막!!";
+		} else if(cursorIdx == 1) {
+			return "포크 공격!!";
+		} else if(cursorIdx == 2) {
+			return "5초간 무적!!";
+		} else if(cursorIdx == 3) {
+			return "빔 공격!!";
 		}
 	}
 
@@ -1487,14 +1503,21 @@ $(document).ready(function() {
 					isEnd: false
 				}
 				explosionList.push(newExplosion);
-				life--;
-				if(life<=0) {
-					life = 0;
-					isPlaying = false;
-				}
 				monsterList[i].isDead = true;
 
-				doReviving();
+				if(isShield) {
+					isShield = false;
+					usingSkill = false;
+				} else {
+					life--;
+					if(life<=0) {
+						life = 0;
+						isPlaying = false;
+					}
+					
+
+					doReviving();
+				}
 				return; 
 			}
 		}
@@ -1511,15 +1534,22 @@ $(document).ready(function() {
 					isEnd: false
 				}
 				explosionList.push(newExplosion);
-				life--;
-				if(life<=0) {
-					life = 0;
-					isPlaying = false;
-				}
 				if(!checkObj.isBeam)
 					bossMissileList[i].isHit = true;
 
-				doReviving();
+				if(isShield) {
+					isShield = false;
+					usingSkill = false;
+				} else {
+					life--;
+					if(life<=0) {
+						life = 0;
+						isPlaying = false;
+					}
+
+					doReviving();
+				}
+					
 				return; 
 			}
 		}
@@ -1572,14 +1602,45 @@ $(document).ready(function() {
 
 	function doSkill() {
 		if(cursorIdx == 0) {
+			if(isShield) true;
+			usingSkill = true;
+			isShield = true;
+			setTimeout(function() {
+				isShield = false;
+				usingSkill = false;
+			}, 10000);
+		} else if(cursorIdx == 1) {
+			usingSkill = true;
+			var skill1IntervalId = setInterval(function() {
+				var newMissile = {};
+
+				var randomY = screenTopBorder + (Math.random()*(screenHeight - screenBottomBorder - screenTopBorder));
+
+				newMissile.idx = cursorIdx;
+				newMissile.x = 0;
+				newMissile.y = randomY;
+				newMissile.endX = screenWidth;
+				newMissile.width = missileSizes[cursorIdx].width;
+				newMissile.height = missileSizes[cursorIdx].height;
+				newMissile.isHit = false;
+				newMissile.speedY = 0;
+				newMissile.speedAngular = 0;
+				newMissile.angle = 0;
+
+				missileList.push(newMissile);
+			}, 300);
+			setTimeout(function() {
+				clearInterval(skill1IntervalId);
+			}, 3000);
+		} else if(cursorIdx == 2) {
 			if(isCharacterInvincible) return;
 			usingSkill = true;
 			isCharacterInvincible = true;
 			setTimeout(function() {
 				usingSkill = false;
 				isCharacterInvincible = false;
-			}, 3000);
-		}
+			}, 5000);
+		} 
 	}
 
 	function initGame() {
