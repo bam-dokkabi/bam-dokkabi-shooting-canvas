@@ -246,6 +246,8 @@ $(document).ready(function() {
 	var bossReadyForPlayer = false;
 	var laserBeamY1, laserBeamY2;
 	var beamReadyOpacity = 0;
+	var characterOpacity = 0.3;
+	var isCharacterInvincible = false;
 
 
 	var chooseChar1 = new Image();
@@ -515,12 +517,12 @@ $(document).ready(function() {
 					if(beamReadyOpacity > 1) beamReadyOpacity = 1;
 					context.save();
 					context.globalAlpha = beamReadyOpacity;
-					context.drawImage(beamReadyImg, bossMissileList[i].bossX-58, beamReadyY-4);
+					context.drawImage(beamReadyImg, bossMissileList[i].bossX-58, beamReadyY-6);
 					context.restore();
 					if(bossMissileList[i].step >= 30) {
 						context.drawImage(bossMissileImgs[mainStageIdx][bossMissileList[i].bossIdx][bossMissileList[i].idx],
 							x,
-							y,
+							y-2,
 							width,
 							height);
 					}
@@ -548,10 +550,14 @@ $(document).ready(function() {
 			context.restore();
 		}
 
-
+		if(isCharacterInvincible) {
+			context.save();
+			context.globalAlpha = characterOpacity;
+		}
 		context.drawImage(gameCharImgs[cursorIdx], charPosX, charPosY);
-
-		
+		if(isCharacterInvincible) {
+			context.restore();
+		}
 
 		for(var i=0;i<monsterList.length;i++) {
 			if(monsterList[i].isOpacityChange) {
@@ -776,6 +782,16 @@ $(document).ready(function() {
 		if(charPosY < screenTopBorder) charPosY = screenTopBorder;
 		if(charPosX > screenWidth*(2/3) - gameCharSizes[cursorIdx].width) charPosX = screenWidth*(2/3)- gameCharSizes[cursorIdx].width;
 		if(charPosY > screenHeight - screenBottomBorder - gameCharSizes[cursorIdx].height) charPosY = screenHeight - screenBottomBorder - gameCharSizes[cursorIdx].height;
+
+		if(isCharacterInvincible) {
+			var sceneCountMod = sceneCount%10;
+
+			if(sceneCountMod >= 5 && sceneCountMod <=9) {
+				characterOpacity = 0.3;
+			} else {
+				characterOpacity = 1;
+			}
+		}
 	}
 
 	function changeBossImg() {
@@ -1385,6 +1401,7 @@ $(document).ready(function() {
 	}
 
 	function doPlayerCollision() {
+		if(isCharacterInvincible) return;
 		for(var i=monsterList.length-1;i>=0;i--) {
 			var checkObj = checkPlayerCollision(monsterList[i], false);
 			if(checkObj.isCollide) {
@@ -1403,6 +1420,12 @@ $(document).ready(function() {
 					isPlaying = false;
 				}
 				monsterList[i].isDead = true;
+
+				charPosX = 0;
+				charPosY = screenHeight/2 - charSizes[cursorIdx].height/2;
+				isCharacterInvincible = true;
+				setTimeout(function(){isCharacterInvincible=false}, 5000);
+				return; 
 			}
 		}
 
@@ -1423,7 +1446,14 @@ $(document).ready(function() {
 					life = 0;
 					isPlaying = false;
 				}
-				bossMissileList[i].isHit = true;
+				if(!checkObj.isBeam)
+					bossMissileList[i].isHit = true;
+
+				charPosX = 0;
+				charPosY = screenHeight/2 - charSizes[cursorIdx].height/2;
+				isCharacterInvincible = true;
+				setTimeout(function(){isCharacterInvincible=false}, 5000);
+				return; 
 			}
 		}
 	}
