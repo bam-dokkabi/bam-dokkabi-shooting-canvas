@@ -30,9 +30,9 @@ $(document).ready(function() {
 	];
 
 	var charStats = [
-		{range:3, speed:3, splash:1, skill: "3초간 무적"},
+		{range:3, speed:3, splash:1, skill: "공격을 한 번 방어해주는 보호막 10초간 생성"},
 		{range:2, speed:2, splash:2, skill: "맵 전체에 포크 공격"},
-		{range:1, speed:2, splash:3, skill: "공격을 한 번 방어해주는 보호막 생성"},
+		{range:1, speed:2, splash:3, skill: "5초간 무적"},
 		{range:3, speed:1, splash:2, skill: "전방에 강력한 빔 공격"}
 	];
 
@@ -202,7 +202,7 @@ $(document).ready(function() {
 
 	var charMovingSpeed = 5;
 	var missileMovingSpeed = 5;
-	var monsterBaseSpeed = 5;
+	var monsterBaseSpeed = 2.5;
 
 	var LEFTMOVE = false;
 	var UPMOVE = false;
@@ -218,7 +218,7 @@ $(document).ready(function() {
 	var timeMin = 3;
 	var timeSec = 0;
 	var monsterKills = 0;
-	var monsterKillMax = 2;
+	var monsterKillMax = 30;
 	var isPlaying = true;
 	var showGameOver = false;
 	var completeGameOver = false;
@@ -254,6 +254,8 @@ $(document).ready(function() {
 	var isReviving = false;
 	var deathFireStep = 0;
 	var isShield = false;
+	var beamStep = 0;
+	var isShootingBeam = false;
 
 
 	var chooseChar1 = new Image();
@@ -271,6 +273,7 @@ $(document).ready(function() {
 	var missileImg3 = new Image();
 	var missileImg4 = new Image();
 	var missileImg5 = new Image();
+	var missileImg6 = new Image();
 	var backImg = new Image();
 	var backImgBoss1 = new Image();
 	var skillBarFrameImg = new Image();
@@ -304,7 +307,8 @@ $(document).ready(function() {
 	missileImg3.src = "images/attack3.png";
 	missileImg4.src = "images/attack4_1.png";
 	missileImg5.src = "images/attack4_2.png";
-	var missileImgs = [missileImg1, missileImg2, missileImg3, missileImg4, missileImg5];
+	missileImg6.src = "images/enemy/ba0_1_0.png";
+	var missileImgs = [missileImg1, missileImg2, missileImg3, missileImg4, missileImg5, missileImg6];
 
 	backImg.src = "images/game_bg1.png";
 	backImgBoss1.src = "images/game_bg2.png";
@@ -571,11 +575,36 @@ $(document).ready(function() {
 		}
 
 		for(var i=0;i<missileList.length;i++) {
-			context.save();
-			context.translate(missileList[i].x + missileList[i].width, missileList[i].y);
-			context.rotate(missileList[i].angle * (Math.PI / 180));
-			context.drawImage(missileImgs[missileList[i].idx], -missileList[i].width , 0, missileList[i].width, missileList[i].height);
-			context.restore();
+			if(missileList[i].isBeam) {
+				//console.log('draw beam : ' + beamStep);
+				if(beamStep>=0 && beamStep<30) {
+					//console.log('draw beam ready');
+					var beamReadyOpacityPlayer = ((beamStep%4)+1) * 0.25;
+					context.save();
+					context.globalAlpha = beamReadyOpacityPlayer;
+					context.drawImage(beamReadyImg, charPosX+gameCharSizes[cursorIdx].width+10, charPosY+gameCharSizes[cursorIdx].height/2-10);
+					context.restore();
+				} else if(beamStep>=30 && beamStep<70) {
+					//console.log('draw beam attack');
+					var beamWidth = missileList[i].width * (beamStep-30)/40;
+					context.drawImage(beamReadyImg, charPosX+gameCharSizes[cursorIdx].width+10, charPosY+gameCharSizes[cursorIdx].height/2-10);
+					context.drawImage(missileImgs[missileList[i].idx],charPosX+gameCharSizes[cursorIdx].width+20, charPosY+gameCharSizes[cursorIdx].height/2-6, beamWidth, missileList[i].height)
+				} else if(beamStep >= 70) {
+					//console.log('diminish beam');
+					var beamHeight = missileList[i].height * (100-beamStep)/30;
+					var beamY = charPosY+gameCharSizes[cursorIdx].height/2-missileList[i].height*(100-beamStep)/60;
+					context.drawImage(beamReadyImg, charPosX+gameCharSizes[cursorIdx].width+10, charPosY+gameCharSizes[cursorIdx].height/2-10);
+					context.drawImage(missileImgs[missileList[i].idx], charPosX+gameCharSizes[cursorIdx].width+20, beamY, missileList[i].width, beamHeight);
+				}
+				beamStep++;
+
+			} else {
+				context.save();
+				context.translate(missileList[i].x + missileList[i].width, missileList[i].y);
+				context.rotate(missileList[i].angle * (Math.PI / 180));
+				context.drawImage(missileImgs[missileList[i].idx], -missileList[i].width , 0, missileList[i].width, missileList[i].height);
+				context.restore();
+			}
 		}
 
 		if(isCharacterInvincible) {
@@ -1240,15 +1269,31 @@ $(document).ready(function() {
 
 		if(isBoss && !targetObj.canHit) return;
 
-		topTemp = missileObj.y - missileObj.width * Math.sin(missileObj.angle * Math.PI/180);
-		bottomTemp = missileObj.y + missileObj.height * Math.cos(missileObj.angle * Math.PI/180);
-		leftTemp = missileObj.x + missileObj.width * (1 - Math.cos(missileObj.angle * Math.PI/180));
-		rightTemp = missileObj.x + missileObj.width - missileObj.height * Math.sin(missileObj.angle * Math.PI/180);
+		if('isBeam' in missileObj) {
+			if(beamStep<30 || beamStep >100) { 
+				return;
+			} else if(beamStep>=30 && beamStep<70) {
+				missileCoor.top = charPosY+gameCharSizes[cursorIdx].height/2-missileObj.height/2-6;
+				missileCoor.bottom = charPosY+gameCharSizes[cursorIdx].height/2 + missileObj.height/2;
+				missileCoor.left = charPosX+gameCharSizes[cursorIdx].width+20;
+				missileCoor.right = charPosX+gameCharSizes[cursorIdx].width+20+missileObj.width * (beamStep-30)/40;
+			} else if(beamStep>=70){
+				missileCoor.left = charPosX+gameCharSizes[cursorIdx].width+20;
+				missileCoor.right = charPosX+gameCharSizes[cursorIdx].width+20 + missileObj.width;
+				missileCoor.top = charPosY+gameCharSizes[cursorIdx].height/2-missileObj.height*(100-beamStep)/60;
+				missileCoor.bottom = charPosY+gameCharSizes[cursorIdx].height/2-missileObj.height*(100-beamStep)/60+missileObj.height*(100-beamStep)/30;
+			}
+		} else {
+			topTemp = missileObj.y - missileObj.width * Math.sin(missileObj.angle * Math.PI/180);
+			bottomTemp = missileObj.y + missileObj.height * Math.cos(missileObj.angle * Math.PI/180);
+			leftTemp = missileObj.x + missileObj.width * (1 - Math.cos(missileObj.angle * Math.PI/180));
+			rightTemp = missileObj.x + missileObj.width - missileObj.height * Math.sin(missileObj.angle * Math.PI/180);
 
-		missileCoor.top = topTemp < bottomTemp ? topTemp : bottomTemp;
-		missileCoor.bottom = topTemp > bottomTemp ? topTemp : bottomTemp;
-		missileCoor.left = leftTemp < rightTemp ? leftTemp : rightTemp;
-		missileCoor.right = leftTemp > rightTemp ? leftTemp : rightTemp;
+			missileCoor.top = topTemp < bottomTemp ? topTemp : bottomTemp;
+			missileCoor.bottom = topTemp > bottomTemp ? topTemp : bottomTemp;
+			missileCoor.left = leftTemp < rightTemp ? leftTemp : rightTemp;
+			missileCoor.right = leftTemp > rightTemp ? leftTemp : rightTemp;
+		}
 
 		monsterCoor.top = targetObj.y;
 		monsterCoor.bottom = targetObj.y + targetObj.height;
@@ -1256,7 +1301,8 @@ $(document).ready(function() {
 		monsterCoor.right = targetObj.x + targetObj.width;
 
 		if(checkOverrapSquares(missileCoor, monsterCoor)) {
-			missileObj.isHit = true;
+			if(!('isBeam' in missileObj))
+				missileObj.isHit = true;
 			targetObj.life--;
 			if(targetObj.life <= 0) {
 				targetObj.isDead = true;
@@ -1307,17 +1353,26 @@ $(document).ready(function() {
 					}
 				}
 			}
-			
-			var newExplosion = {
-				imgIdx: 0,
-				x: missileObj.x + missileObj.width - explosionSizes[0].width/2,
-				y: missileObj.y + missileObj.height - explosionSizes[0].height/2,
-				width: explosionSizes[0].width,
-				height: explosionSizes[0].height,
-				isEnd: false
+			if('isBeam' in missileObj) {
+				var newExplosion = {
+					imgIdx: 0,
+					x: targetObj.x + targetObj.width/2 - explosionSizes[0].width/2,
+					y: targetObj.y + targetObj.height/2 - explosionSizes[0].height/2,
+					width: explosionSizes[0].width,
+					height: explosionSizes[0].height,
+					isEnd: false
+				}
+			} else {
+				var newExplosion = {
+					imgIdx: 0,
+					x: missileObj.x + missileObj.width - explosionSizes[0].width/2,
+					y: missileObj.y + missileObj.height - explosionSizes[0].height/2,
+					width: explosionSizes[0].width,
+					height: explosionSizes[0].height,
+					isEnd: false
+				}
 			}
 			explosionList.push(newExplosion);
-
 		}
 	}
 
@@ -1562,9 +1617,12 @@ $(document).ready(function() {
 			rightTemp = missileList[i].x + missileList[i].width - missileList[i].height * Math.sin(missileList[i].angle * Math.PI/180);
 
 			missileCoor.left = leftTemp < rightTemp ? leftTemp : rightTemp;
-			if(missileCoor.left > missileList[i].endX
+			if((!missileList[i].isBeam &&
+				(missileCoor.left > missileList[i].endX
 				|| missileCoor.left > screenWidth
-				|| missileList[i].isHit) {
+				|| missileList[i].isHit))
+				|| (missileList[i].isBeam) && (beamStep > 100)
+				) {
 				missileList.splice(i, 1);
 			}
 		}
@@ -1640,7 +1698,31 @@ $(document).ready(function() {
 				usingSkill = false;
 				isCharacterInvincible = false;
 			}, 5000);
-		} 
+		} else if(cursorIdx == 3) {
+			usingSkill = true;
+			isshootingBeam = true;
+			beamStep = 0;
+			var newMissile = {};
+
+			newMissile.isBeam = true;
+			newMissile.idx = 5;
+			newMissile.x = charPosX+gameCharSizes[cursorIdx].width + 15;
+			newMissile.y = charPosY+gameCharSizes[cursorIdx].height/2-missileSizes[cursorIdx].height;
+			newMissile.endX = 0;
+			newMissile.width = screenWidth;
+			newMissile.height = 12;
+			newMissile.isHit = false;
+			newMissile.speedY = 0;
+			newMissile.speedAngular = 0;
+			newMissile.angle = 0;
+
+			missileList.push(newMissile);
+
+			setTimeout(function(){
+				usingSkill = false;
+				isShootingBeam = false;
+			},2000);
+		}
 	}
 
 	function initGame() {
