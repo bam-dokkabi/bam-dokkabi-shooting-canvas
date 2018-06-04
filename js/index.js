@@ -30,10 +30,10 @@ $(document).ready(function() {
 	];
 
 	var charStats = [
-		{range:3, speed:3, splash:1, skill: "공격을 한 번 방어해주는 보호막 10초간 생성"},
-		{range:2, speed:2, splash:2, skill: "맵 전체에 포크 공격"},
-		{range:1, speed:2, splash:3, skill: "5초간 무적"},
-		{range:3, speed:1, splash:2, skill: "전방에 강력한 빔 공격"}
+		{range:3, speed:3, splash:1, moveSpeed:1, skill: "공격을 한 번 방어해주는 보호막 10초간 생성"},
+		{range:2, speed:2, splash:2, moveSpeed:2, skill: "맵 전체에 포크 공격"},
+		{range:1, speed:2, splash:3, moveSpeed:2, skill: "5초간 무적"},
+		{range:3, speed:1, splash:2, moveSpeed:3, skill: "전방에 강력한 빔 공격"}
 	];
 
 	var missileSizes = [
@@ -93,10 +93,10 @@ $(document).ready(function() {
 		{life: 2, speed: 1.2, adjustedSpeed: 1.2, isOpacityChange: false},
 		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: true},
 		{life: 1, speed: 2, adjustedSpeed: 2, isOpacityChange: true},
-		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, moveBorder: 150, attackDuration: 5000, isOpacityChange: false},
 		//5
-		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
-		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, moveBorder: 250, attackDuration: 5000, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, speedY: 3, isOpacityChange: false},
 		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
 		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
 		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
@@ -200,7 +200,7 @@ $(document).ready(function() {
 		]
 	];
 
-	var charMovingSpeed = 5;
+	var charMovingSpeed = 2;
 	var missileMovingSpeed = 5;
 	var monsterBaseSpeed = 2.5;
 
@@ -219,7 +219,7 @@ $(document).ready(function() {
 	var timeMin = 3;
 	var timeSec = 0;
 	var monsterKills = 0;
-	var monsterKillMax = 5;
+	var monsterKillMax = 2;
 	var isPlaying = true;
 	var showGameOver = false;
 	var completeGameOver = false;
@@ -444,7 +444,8 @@ $(document).ready(function() {
 			var range = charStats[cursorIdx].range;
 			var speed = charStats[cursorIdx].speed;
 			var splash = charStats[cursorIdx].splash;
-			var statText = "사정거리 " + "●".repeat(range) + "○".repeat(3-range) + "  공격속도 " + "●".repeat(speed) + "○".repeat(3-speed) + "  공격범위 " + "●".repeat(splash) + "○".repeat(3-splash);
+			var moveSpeed = charStats[cursorIdx].moveSpeed;
+			var statText = "사정거리 " + "●".repeat(range) + "○".repeat(3-range) + "  공격속도 " + "●".repeat(speed) + "○".repeat(3-speed) + "  공격범위 " + "●".repeat(splash) + "○".repeat(3-splash) + " 이동속도 " + "●".repeat(moveSpeed) + "○".repeat(3-moveSpeed);
 			context.fillText(statText, 280, 370);
 			context.fillText(charStats[cursorIdx].skill, 280, 400);
 
@@ -625,7 +626,6 @@ $(document).ready(function() {
 		}
 
 		for(var i=0;i<monsterList.length;i++) {
-			console.log(monsterList[i].x);
 			if(monsterList[i].isOpacityChange) {
 				if(sceneCount % 5 == 0) {
 					if(monsterList[i].opacityUp) {
@@ -876,10 +876,10 @@ $(document).ready(function() {
 
 		if(isReviving || isFireOn) return;
 
-		if(LEFTMOVE) charPosX -= charMovingSpeed;
-		if(UPMOVE) charPosY -= charMovingSpeed;
-		if(RIGHTMOVE) charPosX += charMovingSpeed;
-		if(DOWNMOVE) charPosY += charMovingSpeed;
+		if(LEFTMOVE) charPosX -= charMovingSpeed * charStats[cursorIdx].moveSpeed;
+		if(UPMOVE) charPosY -= charMovingSpeed * charStats[cursorIdx].moveSpeed;
+		if(RIGHTMOVE) charPosX += charMovingSpeed * charStats[cursorIdx].moveSpeed;
+		if(DOWNMOVE) charPosY += charMovingSpeed * charStats[cursorIdx].moveSpeed;
 		if(charPosX < 0) charPosX = 0;
 		if(charPosY < screenTopBorder) charPosY = screenTopBorder;
 		if(charPosX > screenWidth*(2/3) - gameCharSizes[cursorIdx].width) charPosX = screenWidth*(2/3)- gameCharSizes[cursorIdx].width;
@@ -933,6 +933,22 @@ $(document).ready(function() {
 	function moveMonster() {
 		for(var i=0;i<monsterList.length;i++) {
 			monsterList[i].x -= monsterList[i].speed * monsterBaseSpeed;
+			if('moveBorder' in monsterList[i]) {
+				console.log('border monster');
+				if(screenWidth - monsterList[i].x > monsterList[i].moveBorder) {
+					monsterList[i].x = screenWidth - monsterList[i].moveBorder;
+					console.log(monsterList[i].x);
+				}
+			}
+
+			if('speedY' in monsterList[i]) {
+				monsterList[i].y += monsterList[i].speedY;
+				if(monsterList[i].y < screenTopBorder) {
+					monsterList[i].speedY = monsterStats[monsterList[i].idx].speedY;
+				} else if(monsterList[i].y > screenHeight - screenBottomBorder - monsterList[i].height) {
+					monsterList[i].speedY = -monsterStats[monsterList[i].idx].speedY;
+				}
+			}
 
 			if(sceneCount%3 !=0) continue;
 
@@ -1026,6 +1042,11 @@ $(document).ready(function() {
 			opacityStep: 0
 		}
 
+		if('moveBorder' in monsterStats[newMonster.idx]) newMonster.moveBorder = monsterStats[newMonster.idx].moveBorder;
+		if('speedY' in monsterStats[newMonster.idx]) newMonster.speedY = monsterStats[newMonster.idx].speedY;
+		if('attackDuration' in monsterStats[newMonster.idx]) newMonster.attackDuration = monsterStats[newMonster.idx].attackDuration;
+
+
 		monsterList.push(newMonster);
 
 		var randomForSparse = parseInt(Math.random() * 3);
@@ -1050,6 +1071,9 @@ $(document).ready(function() {
 				opacity : 1,
 				opacityStep: 0
 			}
+			if('moveBorder' in monsterStats[newMonster.idx]) newMonster.moveBorder = monsterStats[newMonster.idx].moveBorder;
+			if('speedY' in monsterStats[newMonster.idx]) newMonster.speedY = monsterStats[newMonster.idx].speedY;
+			if('attackDuration' in monsterStats[newMonster.idx]) newMonster.attackDuration = monsterStats[newMonster.idx].attackDuration;
 
 			monsterList.push(newMonster);
 		}
@@ -1307,6 +1331,11 @@ $(document).ready(function() {
 			if(!('isBeam' in missileObj))
 				missileObj.isHit = true;
 			targetObj.life--;
+			if(isBoss) {
+				skillBar += skillBarDiff;
+				if(skillBar > 100) skillBar = 100;
+			}
+
 			if(targetObj.life <= 0) {
 				targetObj.isDead = true;
 
@@ -1529,9 +1558,9 @@ $(document).ready(function() {
 
 	function doReviving() {
 		if(isFireOn) return;
-		console.log('do reviving');
 		fireX = charPosX + gameCharSizes[cursorIdx].width/2;
 		fireY = charPosY + gameCharSizes[cursorIdx].height/2;
+		console.log('do reviving : ' + fireX + ', ' + fireY);
 		isFireOn = true;
 		charPosX = -gameCharSizes[cursorIdx].width - 20;
 		charPosY = screenHeight/2 - gameCharSizes[cursorIdx].height/2;	
@@ -1629,15 +1658,14 @@ $(document).ready(function() {
 					isShootingBeam = false;
 					beamStep = 0;
 					usingSkill = false;
-
 					doReviving();
 				}
 
 				for(var j=missileList.length-1;j>=0;j--) {
- 	 				if('isBeam' in missileList[i]) {
+ 	 				if('isBeam' in missileList[j]) {
  	 					missileList.splice(j, 1);
  	 				} else {
- 	 					missileList[i].isHit = true;
+ 	 					missileList[j].isHit = true;
  	 				}
  	 			}
 					
@@ -1727,6 +1755,7 @@ $(document).ready(function() {
 				missileList.push(newMissile);
 			}, 300);
 			setTimeout(function() {
+				isShootingForks = false;
 				clearInterval(skill1IntervalId);
 			}, 3000);
 		} else if(cursorIdx == 2) {
