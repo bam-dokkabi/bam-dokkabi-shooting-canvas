@@ -16,10 +16,10 @@ $(document).ready(function() {
 	var lifeBarHeight = 3;
 
 	var charSizes = [
-		{width: 73, height: 80},
-		{width: 82, height: 67},
-		{width: 75, height: 63},
-		{width: 89, height: 73}
+		{width: 51, height: 80},
+		{width: 50, height: 80},
+		{width: 60, height: 80},
+		{width: 53, height: 80}
 	];
 
 	var gameCharSizes = [
@@ -30,7 +30,7 @@ $(document).ready(function() {
 	];
 
 	var charStats = [
-		{range:3, speed:3, splash:1, skill: "6초간 무적"},
+		{range:3, speed:3, splash:1, skill: "3초간 무적"},
 		{range:2, speed:2, splash:2, skill: "맵 전체에 포크 공격"},
 		{range:1, speed:2, splash:3, skill: "공격을 한 번 방어해주는 보호막 생성"},
 		{range:3, speed:1, splash:2, skill: "전방에 강력한 빔 공격"}
@@ -248,6 +248,11 @@ $(document).ready(function() {
 	var beamReadyOpacity = 0;
 	var characterOpacity = 0.3;
 	var isCharacterInvincible = false;
+	var usingSkill = false;
+	var isFireOn = false;
+	var fireX, fireY;
+	var isReviving = false;
+	var deathFireStep = 0;
 
 
 	var chooseChar1 = new Image();
@@ -275,10 +280,10 @@ $(document).ready(function() {
 	var heartImg = new Image();
 	var beamReadyImg = new Image();
 
-	chooseChar1.src = "images/c01.png";
-	chooseChar2.src = "images/c02.png";
-	chooseChar3.src = "images/c03.png";
-	chooseChar4.src = "images/c04.png";
+	chooseChar1.src = "images/s01.png";
+	chooseChar2.src = "images/s02.png";
+	chooseChar3.src = "images/s03.png";
+	chooseChar4.src = "images/s04.png";
 	var charImgs = [chooseChar1, chooseChar2, chooseChar3, chooseChar4];
 
 	gameChar1.src = "images/c01.png";
@@ -362,9 +367,16 @@ $(document).ready(function() {
 	gameOverImg.src = "images/gameover.png";
 	nextStageImg.src = "images/next.png";
 	heartImg.src = "images/heart.png";
-	beamReadyImg.src = "images/enemy/ea5.png"
+	beamReadyImg.src = "images/enemy/ea5.png";
+	var deathFireImgs = [];
+	for(var i=0;i<2;i++) {
+		var newDeathFireImg = new Image();
+		deathFireImgs.push(newDeathFireImg);
+	}
+	deathFireImgs[0].src = "images/death1.png";
+	deathFireImgs[1].src = "images/death2.png";
 
-	var chooseCharPosX = [250, 350, 450, 550];
+	var chooseCharPosX = [300, 400, 500, 600];
 	var chooseCharPosY = 180;
 	var cursorX, cursorY;
 	cursorX = chooseCharPosX[0] + charSizes[0].width/2 - 9;
@@ -542,6 +554,18 @@ $(document).ready(function() {
 			//context.drawImage(bossImgs1[bossImgIdx], back3X+2736-bossSizes[mainStageIdx][0].width, screenHeight/2 - bossSizes[mainStageIdx][0].height/2);
 		}
 
+		if(isFireOn) {
+			context.save();
+			context.globalAlpha = (100 - deathFireStep) * 0.01;
+			var deathFireIdx = deathFireStep % 10;
+			if(deathFireIdx > 5) deathFireIdx = 1;
+			else deathFireIdx = 0;
+			context.drawImage(deathFireImgs[deathFireIdx], fireX-22.5, fireY-40);
+			context.restore();
+			deathFireStep++;
+			if(deathFireStep >= 100) deathFireStep = 0;
+		}
+
 		for(var i=0;i<missileList.length;i++) {
 			context.save();
 			context.translate(missileList[i].x + missileList[i].width, missileList[i].y);
@@ -600,6 +624,14 @@ $(document).ready(function() {
 		for(var i=0;i<explosionList.length;i++) {
 			if(explosionList[i].imgIdx < 48) 
 				context.drawImage(explosionImgs[explosionList[i].imgIdx], explosionList[i].x, explosionList[i].y, explosionList[i].width, explosionList[i].height);
+		}
+
+		if(usingSkill) {
+			context.font = "18px DoHyeon";
+			context.fillStyle = "white";
+			context.textAlign = "center";
+			context.textBaseline = "bottom";
+			context.fillText(getSkillMessage(), charPosX + gameCharSizes[cursorIdx].width/2, charPosY - 10);
 		}
 
 		context.font = "20px SandollGothicM";
@@ -694,6 +726,12 @@ $(document).ready(function() {
 		}
 	}
 
+	function getSkillMessage() {
+		if(cursorIdx == 0) {
+			return "3초간 무적!";
+		}
+	}
+
 	function drawBossLifeBar(drawInBar) {
 		context.fillStyle = "gray";
 		context.fillRect(bossBarMarginLeft, bossBarY, screenWidth-bossBarMarginLeft, bossBarHeight);
@@ -774,14 +812,9 @@ $(document).ready(function() {
 	}
 
 	function movePlayer() {
-		if(LEFTMOVE) charPosX -= charMovingSpeed;
-		if(UPMOVE) charPosY -= charMovingSpeed;
-		if(RIGHTMOVE) charPosX += charMovingSpeed;
-		if(DOWNMOVE) charPosY += charMovingSpeed;
-		if(charPosX < 0) charPosX = 0;
-		if(charPosY < screenTopBorder) charPosY = screenTopBorder;
-		if(charPosX > screenWidth*(2/3) - gameCharSizes[cursorIdx].width) charPosX = screenWidth*(2/3)- gameCharSizes[cursorIdx].width;
-		if(charPosY > screenHeight - screenBottomBorder - gameCharSizes[cursorIdx].height) charPosY = screenHeight - screenBottomBorder - gameCharSizes[cursorIdx].height;
+		if(isReviving) {
+			charPosX += gameCharSizes[cursorIdx].width/50;
+		}
 
 		if(isCharacterInvincible) {
 			var sceneCountMod = sceneCount%10;
@@ -792,6 +825,17 @@ $(document).ready(function() {
 				characterOpacity = 1;
 			}
 		}
+
+		if(isReviving || isFireOn) return;
+
+		if(LEFTMOVE) charPosX -= charMovingSpeed;
+		if(UPMOVE) charPosY -= charMovingSpeed;
+		if(RIGHTMOVE) charPosX += charMovingSpeed;
+		if(DOWNMOVE) charPosY += charMovingSpeed;
+		if(charPosX < 0) charPosX = 0;
+		if(charPosY < screenTopBorder) charPosY = screenTopBorder;
+		if(charPosX > screenWidth*(2/3) - gameCharSizes[cursorIdx].width) charPosX = screenWidth*(2/3)- gameCharSizes[cursorIdx].width;
+		if(charPosY > screenHeight - screenBottomBorder - gameCharSizes[cursorIdx].height) charPosY = screenHeight - screenBottomBorder - gameCharSizes[cursorIdx].height;
 	}
 
 	function changeBossImg() {
@@ -1230,6 +1274,7 @@ $(document).ready(function() {
 							bossMissileList[i].isHit = true;
 						}
 						bossKill = 0;
+						missileList = [];
 					}
 				}
 				else {
@@ -1400,8 +1445,36 @@ $(document).ready(function() {
 		return {isCollide : false, x:0, y:0};
 	}
 
+	function doReviving() {
+		if(isFireOn) return;
+		console.log('do reviving');
+		fireX = charPosX + gameCharSizes[cursorIdx].width/2;
+		fireY = charPosY + gameCharSizes[cursorIdx].height/2;
+		isFireOn = true;
+		charPosX = -gameCharSizes[cursorIdx].width - 20;
+		charPosY = screenHeight/2 - gameCharSizes[cursorIdx].height/2;	
+		deathFireStep = 0;
+		setTimeout(function() {
+			console.log('reviving start');
+			deathFireStep = 0;
+			isFireOn = false;
+			isReviving = true;
+			isCharacterInvincible = true;
+
+			setTimeout(function() {
+				console.log('reviving end');
+				isReviving = false;
+			}, 1000);
+
+			setTimeout(function() {
+				console.log('invincible end');
+				isCharacterInvincible = false;
+			}, 5000);
+		}, 2000);
+	}
+
 	function doPlayerCollision() {
-		if(isCharacterInvincible) return;
+		if(isCharacterInvincible || isFireOn || isReviving) return;
 		for(var i=monsterList.length-1;i>=0;i--) {
 			var checkObj = checkPlayerCollision(monsterList[i], false);
 			if(checkObj.isCollide) {
@@ -1421,10 +1494,7 @@ $(document).ready(function() {
 				}
 				monsterList[i].isDead = true;
 
-				charPosX = 0;
-				charPosY = screenHeight/2 - charSizes[cursorIdx].height/2;
-				isCharacterInvincible = true;
-				setTimeout(function(){isCharacterInvincible=false}, 5000);
+				doReviving();
 				return; 
 			}
 		}
@@ -1449,10 +1519,7 @@ $(document).ready(function() {
 				if(!checkObj.isBeam)
 					bossMissileList[i].isHit = true;
 
-				charPosX = 0;
-				charPosY = screenHeight/2 - charSizes[cursorIdx].height/2;
-				isCharacterInvincible = true;
-				setTimeout(function(){isCharacterInvincible=false}, 5000);
+				doReviving();
 				return; 
 			}
 		}
@@ -1503,6 +1570,18 @@ $(document).ready(function() {
 		}
 	}
 
+	function doSkill() {
+		if(cursorIdx == 0) {
+			if(isCharacterInvincible) return;
+			usingSkill = true;
+			isCharacterInvincible = true;
+			setTimeout(function() {
+				usingSkill = false;
+				isCharacterInvincible = false;
+			}, 3000);
+		}
+	}
+
 	function initGame() {
 		screenOpacity = 0;
 		isPlaying = true;
@@ -1530,6 +1609,10 @@ $(document).ready(function() {
 		endingBossStage = false;
 		erasingBossStage = false;
 		bossKill = 0;
+		isCharacterInvincible = false;
+		usingSkill = false;
+		isFireOn = false;
+		isReviving = false;
 
 		explosionList = [];
 		monsterList = [];
@@ -1564,7 +1647,7 @@ $(document).ready(function() {
 	$(document).keydown(function(e) {
 		var keyCode = e.which;
 		
-		if(keyCode == 37 || keyCode == 38 || keyCode == 39 || keyCode == 40 || keyCode == 32) {
+		if(keyCode == 37 || keyCode == 38 || keyCode == 39 || keyCode == 40 || keyCode == 32 || keyCode == 13) {
 			event.preventDefault();
 			event.stopPropagation();
 		}
@@ -1606,6 +1689,7 @@ $(document).ready(function() {
 				}, 100);
 			}
 		} else if(scene == 2) {
+			if(isReviving || isFireOn) return;
 			if(keyCode == 37) LEFTMOVE = true;
 			if(keyCode == 38) UPMOVE = true;
 			if(keyCode == 39) RIGHTMOVE = true;
@@ -1613,6 +1697,11 @@ $(document).ready(function() {
 
 			if(keyCode == 32 && canFire && !movingBossStage) {
 				createMissile();
+			}
+
+			if(keyCode == 13 && skillBar == 100) {
+				skillBar = 0;
+				doSkill();
 			}
 		}
 	});
