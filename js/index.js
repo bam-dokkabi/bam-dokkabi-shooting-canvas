@@ -625,6 +625,7 @@ $(document).ready(function() {
 		}
 
 		for(var i=0;i<monsterList.length;i++) {
+			console.log(monsterList[i].x);
 			if(monsterList[i].isOpacityChange) {
 				if(sceneCount % 5 == 0) {
 					if(monsterList[i].opacityUp) {
@@ -931,7 +932,7 @@ $(document).ready(function() {
 
 	function moveMonster() {
 		for(var i=0;i<monsterList.length;i++) {
-			monsterList[i].x -= monsterList[i].adjustedSpeed * monsterBaseSpeed;
+			monsterList[i].x -= monsterList[i].speed * monsterBaseSpeed;
 
 			if(sceneCount%3 !=0) continue;
 
