@@ -367,6 +367,7 @@ body {
 	width: 107px;
 	height: 147px;
 	background: url('../images/close.png'); no-repeat left top;
+	cursor: pointer;
 }
 
 .info-panel {

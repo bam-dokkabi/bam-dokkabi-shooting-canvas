@@ -89,27 +89,27 @@ $(document).ready(function() {
 
 	var monsterStats = [
 		//0
-		{life: 1, speed: 1, isOpacityChange: false},
-		{life: 2, speed: 1, isOpacityChange: false},
-		{life: 1, speed: 1, isOpacityChange: true},
-		{life: 1, speed: 2, isOpacityChange: true},
-		{life: 1, speed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1, adjustedSpeed: 1, isOpacityChange: false},
+		{life: 2, speed: 1.2, adjustedSpeed: 1.2, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: true},
+		{life: 1, speed: 2, adjustedSpeed: 2, isOpacityChange: true},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
 		//5
-		{life: 1, speed: 1.5, isOpacityChange: false},
-		{life: 1, speed: 1.5, isOpacityChange: false},
-		{life: 1, speed: 1.5, isOpacityChange: false},
-		{life: 1, speed: 1.5, isOpacityChange: false},
-		{life: 1, speed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
 		//10
-		{life: 1, speed: 2.5, isOpacityChange: false},
-		{life: 5, speed: 1.5, isOpacityChange: false},
-		{life: 5, speed: 1.5, isOpacityChange: false},
-		{life: 1, speed: 1.5, isOpacityChange: false},
-		{life: 1, speed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 2.5, adjustedSpeed: 2.5, isOpacityChange: false},
+		{life: 5, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
+		{life: 5, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
 		//15
-		{life: 1, speed: 1.5, isOpacityChange: false},
-		{life: 1, speed: 1.5, isOpacityChange: false},
-		{life: 1, speed: 1.5, isOpacityChange: false}
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false},
+		{life: 1, speed: 1.5, adjustedSpeed: 1.5, isOpacityChange: false}
 	];
 
 	var bossStats = [
@@ -215,10 +215,11 @@ $(document).ready(function() {
 	var life = 3;
 	var skillBar = 0;
 	var skillBarSize = {width:240, height:12};
+	var skillBarDiff = 20;
 	var timeMin = 3;
 	var timeSec = 0;
 	var monsterKills = 0;
-	var monsterKillMax = 30;
+	var monsterKillMax = 5;
 	var isPlaying = true;
 	var showGameOver = false;
 	var completeGameOver = false;
@@ -256,6 +257,7 @@ $(document).ready(function() {
 	var isShield = false;
 	var beamStep = 0;
 	var isShootingBeam = false;
+	var isShootingForks = false;
 
 
 	var chooseChar1 = new Image();
@@ -564,14 +566,14 @@ $(document).ready(function() {
 
 		if(isFireOn) {
 			context.save();
-			context.globalAlpha = (100 - deathFireStep) * 0.01;
+			context.globalAlpha = (50 - deathFireStep) * 0.005;
 			var deathFireIdx = deathFireStep % 10;
 			if(deathFireIdx > 5) deathFireIdx = 1;
 			else deathFireIdx = 0;
-			context.drawImage(deathFireImgs[deathFireIdx], fireX-22.5, fireY-40);
+			context.drawImage(deathFireImgs[deathFireIdx], fireX-22.5+45*(deathFireStep)/100, fireY-40+80*(deathFireStep)/100,45*(50-deathFireStep)/50, 80*(50-deathFireStep)/50);
 			context.restore();
 			deathFireStep++;
-			if(deathFireStep >= 100) deathFireStep = 0;
+			if(deathFireStep >= 50) deathFireStep = 0;
 		}
 
 		for(var i=0;i<missileList.length;i++) {
@@ -929,7 +931,7 @@ $(document).ready(function() {
 
 	function moveMonster() {
 		for(var i=0;i<monsterList.length;i++) {
-			monsterList[i].x -= monsterList[i].speed * monsterBaseSpeed;
+			monsterList[i].x -= monsterList[i].adjustedSpeed * monsterBaseSpeed;
 
 			if(sceneCount%3 !=0) continue;
 
@@ -1016,7 +1018,7 @@ $(document).ready(function() {
 			height: monsterSizes[monsterIdx].height,
 			isDead: false,
 			life: monsterStats[monsterIdx].life,
-			speed: monsterStats[monsterIdx].speed,
+			speed: monsterStats[monsterIdx].adjustedSpeed,
 			isOpacityChange : monsterStats[monsterIdx].isOpacityChange,
 			opacityUp : false,
 			opacity : 1,
@@ -1041,7 +1043,7 @@ $(document).ready(function() {
 				height: monsterSizes[sparseMonsterIdx].height,
 				isDead: false,
 				life: monsterStats[sparseMonsterIdx].life,
-				speed: monsterStats[sparseMonsterIdx].speed,
+				speed: monsterStats[sparseMonsterIdx].adjustedSpeed,
 				isOpacityChange : monsterStats[sparseMonsterIdx].isOpacityChange,
 				opacityUp : false,
 				opacity : 1,
@@ -1340,7 +1342,7 @@ $(document).ready(function() {
 					}
 				}
 				else {
-					skillBar += 20;
+					skillBar += skillBarDiff;
 					if(skillBar > 100) skillBar = 100;
 					if(!isBossStage) {
 						if(monsterKills < monsterKillMax) {
@@ -1456,6 +1458,14 @@ $(document).ready(function() {
 				mainStageIdx++;
 				subStageIdx = 0;
 				showingMainStage = true;
+				if(mainStageIdx==1) {
+					monsterStats[0].adjustedSpeed = monsterStats[0].speed * 1.2;
+					monsterStats[1].adjustedSpeed = monsterStats[1].speed * 1.2;
+				} else if(mainStageIdx==2) {
+					monsterStats[1].adjustedSpeed = monsterStats[1].speed * 1.4;
+				} else if(mainStageIdx==3) {
+					monsterStats[1].adjustedSpeed = monsterStats[1].speed * 1.6;
+				}
 				setTimeout(function() {showingMainStage = false;}, 3000);
 				var pre;
 				$('.map-guide > .map-dot').each(function(idx, item) {
@@ -1541,7 +1551,7 @@ $(document).ready(function() {
 				console.log('invincible end');
 				isCharacterInvincible = false;
 			}, 5000);
-		}, 2000);
+		}, 1000);
 	}
 
 	function doPlayerCollision() {
@@ -1570,10 +1580,22 @@ $(document).ready(function() {
 						isPlaying = false;
 					}
 					
-
+					isShootingForks = false;
+					isShootingBeam = false;
+					beamStep = 0;
+					usingSkill = false;
 					doReviving();
-				}
+ 	 			}
+
+ 	 			for(var j=missileList.length-1;j>=0;j--) {
+ 	 				if('isBeam' in missileList[j]) {
+ 	 					missileList.splice(j, 1);
+ 	 				} else {
+ 	 					missileList[j].isHit = true;
+ 	 				}
+ 	 			}
 				return; 
+
 			}
 		}
 
@@ -1602,8 +1624,21 @@ $(document).ready(function() {
 						isPlaying = false;
 					}
 
+					isShootingForks = false;
+					isShootingBeam = false;
+					beamStep = 0;
+					usingSkill = false;
+
 					doReviving();
 				}
+
+				for(var j=missileList.length-1;j>=0;j--) {
+ 	 				if('isBeam' in missileList[i]) {
+ 	 					missileList.splice(j, 1);
+ 	 				} else {
+ 	 					missileList[i].isHit = true;
+ 	 				}
+ 	 			}
 					
 				return; 
 			}
@@ -1668,8 +1703,11 @@ $(document).ready(function() {
 				usingSkill = false;
 			}, 10000);
 		} else if(cursorIdx == 1) {
+			if(isShootingForks) return;
 			usingSkill = true;
+			isShootingForks = true;
 			var skill1IntervalId = setInterval(function() {
+				if(!isShootingForks) return;
 				var newMissile = {};
 
 				var randomY = screenTopBorder + (Math.random()*(screenHeight - screenBottomBorder - screenTopBorder));
@@ -1699,8 +1737,9 @@ $(document).ready(function() {
 				isCharacterInvincible = false;
 			}, 5000);
 		} else if(cursorIdx == 3) {
+			if(isShootingBeam) return;
 			usingSkill = true;
-			isshootingBeam = true;
+			isShootingBeam = true;
 			beamStep = 0;
 			var newMissile = {};
 
@@ -1762,6 +1801,10 @@ $(document).ready(function() {
 		missileList = [];
 		bossList = [];
 		bossMissileList = [];
+
+		for(var i=0;i<monsterStats.length;i++) {
+			monsterStats[i].adjustedSpeed = monsterStats[i].speed;
+		}
 
 		$('.map-guide > .map-dot').each(function(idx, item) {
 			if(idx == 0) {
